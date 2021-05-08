@@ -1,15 +1,15 @@
 import { Plugin } from 'obsidian';
-import { _MyPlugin_Settings, DEFAULT_SETTINGS, _MyPlugin_SettingTab } from 'settings';
+// import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
-export default class _MyPlugin_ extends Plugin {
-	settings: _MyPlugin_Settings = DEFAULT_SETTINGS;
+export default class BetterFn extends Plugin {
+	// settings: BetterFnSettings = DEFAULT_SETTINGS;
 
 	async onload() {
 		console.log('loading plugin');
 
-		await this.loadSettings();
+		// await this.loadSettings();
 
-		this.addSettingTab(new _MyPlugin_SettingTab(this.app, this));
+		// this.addSettingTab(new BetterFnSettingTab(this.app, this));
 
 	}
 
@@ -17,11 +17,11 @@ export default class _MyPlugin_ extends Plugin {
 		console.log('unloading plugin');
 	}
 
-	async loadSettings() {
-		this.settings = {...this.settings,...(await this.loadData())};
-	}
+	// async loadSettings() {
+	// 	this.settings = {...this.settings,...(await this.loadData())};
+	// }
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+	// async saveSettings() {
+	// 	await this.saveData(this.settings);
+	// }
 }

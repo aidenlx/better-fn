@@ -1,9 +1,9 @@
 {
-	"id": "myplugin",
-	"name": "myplugin",
+	"id": "better-fn",
+	"name": "Better footnote",
 	"version": "0.0.0",
 	"minAppVersion": "0.9.12",
-	"description": "myplugin",
+	"description": "Better footnote for Obsidian",
 	"author": "",
 	"authorUrl": "",
 	"isDesktopOnly": false

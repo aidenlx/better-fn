@@ -1,43 +1,43 @@
-import _MyPlugin_ from "main";
+import BetterFn from "main";
 import { PluginSettingTab, App, Setting } from "obsidian";
 
-export interface _MyPlugin_Settings {
+export interface BetterFnSettings {
 	hello:boolean;
 }
 
-export const DEFAULT_SETTINGS: _MyPlugin_Settings = {
+export const DEFAULT_SETTINGS: BetterFnSettings = {
 	hello:true
 }
 
 
-type option = { k: keyof _MyPlugin_Settings; name: string; desc: string|DocumentFragment; }
+type option = { k: keyof BetterFnSettings; name: string; desc: string|DocumentFragment; }
 
-export class _MyPlugin_SettingTab extends PluginSettingTab {
-  plugin: _MyPlugin_;
+export class BetterFnSettingTab extends PluginSettingTab {
+  plugin: BetterFn;
 
-  constructor(app: App, plugin: _MyPlugin_) {
+  constructor(app: App, plugin: BetterFn) {
     super(app, plugin);
     this.plugin = plugin;
   }
 
   display(): void {
     for (const o of this.options) {
-      this.setOption(o);
+      // this.setOption(o);
     }
   }
 
-  setOption(this: _MyPlugin_SettingTab, { k, name, desc }: option) {
-    new Setting(this.containerEl)
-      .setName(name)
-      .setDesc(desc)
-      .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings[k]).onChange(async (value) => {
-          this.plugin.settings[k] = value;
-          this.plugin.saveData(this.plugin.settings);
-          this.display();
-        })
-      );
-  }
+  // setOption(this: BetterFnSettingTab, { k, name, desc }: option) {
+  //   new Setting(this.containerEl)
+  //     .setName(name)
+  //     .setDesc(desc)
+  //     .addToggle((toggle) =>
+  //       toggle.setValue(this.plugin.settings[k]).onChange(async (value) => {
+  //         this.plugin.settings[k] = value;
+  //         this.plugin.saveData(this.plugin.settings);
+  //         this.display();
+  //       })
+  //     );
+  // }
 
   options: option[] = [
     {
