@@ -7,7 +7,10 @@ const PopperOption: Parameters<typeof createPopper>[2] = {
   placement: "top",
 };
 
-export const PopoverHandler: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
+// prettier-ignore
+export const PopoverHandler: MarkdownPostProcessor = function (
+  this: BetterFn, el, ctx
+) {
   const plugin = this;
 
   type callback = Parameters<NodeListOf<Element>["forEach"]>[0];
@@ -39,15 +42,16 @@ export const PopoverHandler: MarkdownPostProcessor = function (this: BetterFn, e
     // >
     const sup = v as HTMLElement;
 
-    const { id: refId, innerText:srcText } = sup;
-    const { docId } = ctx;
+    const { id: refId, innerText: srcText } = sup;
+    const { docId, sourcePath } = ctx;
 
     empty(sup);
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "tt-"));
 
     const foundIndex = plugin.fnInfo.findIndex(
-      (v) => v.docId === docId && v.refId === refId
+      (v) =>
+        v.docId === docId && v.sourcePath === sourcePath && v.refId === refId
     );
     if (foundIndex !== -1) {
       const info = plugin.fnInfo[foundIndex];
@@ -59,7 +63,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (this: BetterFn, e
         info.pop = createPopover(refId, src, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
     } else {
-      plugin.fnInfo.push({ refId, docId, refEl: sup, pop: null });
+      plugin.fnInfo.push({ refId, docId, sourcePath, refEl: sup, pop: null });
     }
   }
   function callbackFn(v: Element) {
@@ -80,10 +84,14 @@ export const PopoverHandler: MarkdownPostProcessor = function (this: BetterFn, e
     const li = v as HTMLLIElement;
 
     const { id: fnId } = li;
-    const { docId } = ctx;
+    const { docId, sourcePath } = ctx;
 
     const foundIndex = plugin.fnInfo.findIndex(
-      (v) => v.docId === docId && v.refId === fnId.replace(/^fn-/, "fnref-")
+      (v) =>
+        v.docId === docId &&
+        v.sourcePath === sourcePath &&
+        v.refId === fnId.replace(/^fn-/, "fnref-")
+      
     );
     if (foundIndex !== -1) {
       const info = plugin.fnInfo[foundIndex];
