@@ -27,6 +27,27 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     return result.length !== 0;
   }
 
+  /**
+   * Performs the specified action for object that matches id
+   * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
+   * @param ifFound action when object is found
+   * @param notFound action when no match is found
+   */
+  function findFnInfo(
+    id: string,
+    ifFound?: (found: BetterFn["fnInfo"][0]) => void,
+    notFound?: () => void
+  ) {
+    const foundIndex = plugin.fnInfo.findIndex(
+      (v) =>
+        v.docId === ctx.docId &&
+        v.sourcePath === ctx.sourcePath &&
+        v.refId === id.replace(/^fn-/, "fnref-")
+    );
+    if (foundIndex !== -1 && ifFound) ifFound(plugin.fnInfo[foundIndex]);
+    else if (notFound) notFound();
+  }
+
   function callbackRef(v: Element) {
     // <sup
     //   data-footnote-id="fnref-1-aa7e756d44d79c16"
@@ -49,12 +70,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "tt-"));
 
-    const foundIndex = plugin.fnInfo.findIndex(
-      (v) =>
-        v.docId === docId && v.sourcePath === sourcePath && v.refId === refId
-    );
-    if (foundIndex !== -1) {
-      const info = plugin.fnInfo[foundIndex];
+    const actionFound = (info:BetterFn["fnInfo"][0]) => {
       info.refEl = sup;
       const { pop } = info;
       if (pop) {
@@ -62,9 +78,12 @@ export const PopoverHandler: MarkdownPostProcessor = function (
         pop.destroy();
         info.pop = createPopover(refId, src, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
-    } else {
-      plugin.fnInfo.push({ refId, docId, sourcePath, refEl: sup, pop: null });
     }
+
+    findFnInfo(refId, actionFound, () =>
+      plugin.fnInfo.push({ refId, docId, sourcePath, refEl: sup, pop: null })
+    );
+     
   }
   function callbackFn(v: Element) {
     // <li
@@ -84,17 +103,8 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     const li = v as HTMLLIElement;
 
     const { id: fnId } = li;
-    const { docId, sourcePath } = ctx;
 
-    const foundIndex = plugin.fnInfo.findIndex(
-      (v) =>
-        v.docId === docId &&
-        v.sourcePath === sourcePath &&
-        v.refId === fnId.replace(/^fn-/, "fnref-")
-      
-    );
-    if (foundIndex !== -1) {
-      const info = plugin.fnInfo[foundIndex];
+    const actionFound = (info:BetterFn["fnInfo"][0]) => {
       const { refEl, pop } = info;
       if (pop) {
         const popEl = pop.state.elements.popper;
@@ -102,17 +112,22 @@ export const PopoverHandler: MarkdownPostProcessor = function (
       } else {
         info.pop = createPopover(fnId, li, refEl);
       }
-    } else
+    }
+
+    findFnInfo(fnId, actionFound, () =>
       console.error(
         "Unable to create popover: ref info not found in %o",
         plugin.fnInfo
-      );
+      )
+    );
   }
 
   if (!forEach("sup.footnote-ref", callbackRef)) {
     if (forEach("section.footnotes li", callbackFn)) el.style.display = "none";
   }
 };
+
+
 
 /**
  * Create new Popper instance for footnote popover
