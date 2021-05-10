@@ -6,7 +6,7 @@ import {createPopper} from '@popperjs/core'
 export default class BetterFn extends Plugin {
   // settings: BetterFnSettings = DEFAULT_SETTINGS;
 
-  footnotes: {
+  fnInfo: {
     refId: string;
     docId: string;
 		refEl: HTMLElement;
