@@ -1,6 +1,7 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor, MarkdownPostProcessorContext } from "obsidian";
 import { createPopper } from "@popperjs/core";
+import { cloneChild, empty, insertAfter } from "./tools";
 
 const PopperOption: Parameters<typeof createPopper>[2] = {
   placement: "top",
@@ -32,12 +33,11 @@ export const post: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
     // >
     const sup = v as HTMLElement;
 
-    const { id: refId, innerText } = sup;
+    const { id: refId, innerText:srcText } = sup;
     const { docId } = ctx;
 
-    // empty sup
-    while (sup.firstChild) sup.removeChild(sup.firstChild);
-    sup.innerText = innerText;
+    empty(sup);
+    sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "tt-"));
 
     const foundIndex = plugin.fnInfo.findIndex(
@@ -117,30 +117,17 @@ function createPopover(
       cls: "popper",
       attr: { id: id.replace(/^(?:fn|fnref)-/, "tt-"), role: "tooltip" },
     },
-    (el) => cloneChild(childSrc, el)
+    (el) => {
+      const filter = (node: ChildNode) =>
+        node.nodeName !== "A" ||
+        !(node as HTMLAnchorElement).hasClass("footnote-backref");
+      cloneChild(childSrc, el, filter);
+    }
   );
   insertAfter(popEl, refEl);
   const popperInstance = createPopper(refEl, popEl, PopperOption);
   setHover(popperInstance, refEl, popEl);
   return popperInstance;
-}
-
-function insertAfter(newNode: Node, referenceNode: Node) {
-  if (referenceNode.parentNode)
-    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-  else console.error("%o has no parentNode", referenceNode);
-}
-
-function cloneChild(from: HTMLElement, to: HTMLElement) {
-  while (to.firstChild) to.removeChild(to.firstChild);
-  from.childNodes.forEach((node) => {
-    //filter backref
-    if (
-      node.nodeName !== "A" ||
-      !(node as HTMLAnchorElement).hasClass("footnote-backref")
-    )
-      to.appendChild(node);
-  });
 }
 
 function setHover(
