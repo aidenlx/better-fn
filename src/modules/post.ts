@@ -7,11 +7,17 @@ const PopperOption: Parameters<typeof createPopper>[2] = {
   placement: "top",
 };
 
-export const post: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
+export const PopoverHandler: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
   const plugin = this;
 
   type callback = Parameters<NodeListOf<Element>["forEach"]>[0];
 
+  /**
+   * Performs the specified action for each node that matches given selector in current element.
+   * @param selector Used to match element descendants of node
+   * @param callback A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the list.
+   * @returns whether selector has any match
+   */
   function forEach(selector: string, callback: callback): boolean {
     const result = el.querySelectorAll(selector);
     if (result.length !== 0) result.forEach(callback);
@@ -101,8 +107,8 @@ export const post: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
 };
 
 /**
- *
- * @param id "fnref-" or "fn-"
+ * Create new Popper instance for footnote popover
+ * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
  * @param childSrc source of popover content
  * @param refEl popover will be insert after this
  * @returns Popper.Instance
@@ -126,11 +132,11 @@ function createPopover(
   );
   insertAfter(popEl, refEl);
   const popperInstance = createPopper(refEl, popEl, PopperOption);
-  setHover(popperInstance, refEl, popEl);
+  setEventHandler(popperInstance, refEl, popEl);
   return popperInstance;
 }
 
-function setHover(
+function setEventHandler(
   popperInstance: ReturnType<typeof createPopper>,
   refEl: HTMLElement,
   popEl: HTMLElement

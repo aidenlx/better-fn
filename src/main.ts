@@ -1,4 +1,4 @@
-import { post } from "modules/post";
+import { PopoverHandler } from "modules/post";
 import { Plugin } from "obsidian";
 import { createPopper } from "@popperjs/core";
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
@@ -18,7 +18,7 @@ export default class BetterFn extends Plugin {
 
     // await this.loadSettings();
 
-    this.registerMarkdownPostProcessor(post.bind(this));
+    this.registerMarkdownPostProcessor(PopoverHandler.bind(this));
     // this.addSettingTab(new BetterFnSettingTab(this.app, this));
   }
 
