@@ -1,11 +1,9 @@
 import BetterFn from "main";
-import { MarkdownPostProcessor, MarkdownPostProcessorContext } from "obsidian";
-import { createPopper } from "@popperjs/core";
-import { cloneChild, empty, insertAfter } from "./tools";
+import { MarkdownPostProcessor } from "obsidian";
+import { empty } from "./tools";
+import { fnInfo, PopperRenderChild } from "./renderChild";
 
-const PopperOption: Parameters<typeof createPopper>[2] = {
-  placement: "top",
-};
+
 
 // prettier-ignore
 export const PopoverHandler: MarkdownPostProcessor = function (
@@ -48,6 +46,18 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     else if (notFound) notFound();
   }
 
+  /**
+   * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
+   */
+  function findFnInfoIndex(id: string): number {
+    return plugin.fnInfo.findIndex(
+      (v) =>
+        v.docId === ctx.docId &&
+        v.sourcePath === ctx.sourcePath &&
+        v.refId === id.replace(/^fn-/, "fnref-")
+    );
+  }
+
   function callbackRef(v: Element) {
     // <sup
     //   data-footnote-id="fnref-1-aa7e756d44d79c16"
@@ -70,20 +80,21 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "tt-"));
 
-    const actionFound = (info:BetterFn["fnInfo"][0]) => {
-      info.refEl = sup;
-      const { pop } = info;
-      if (pop) {
-        const src = pop.state.elements.popper;
-        pop.destroy();
-        info.pop = createPopover(refId, src, sup);
-      } else console.error("refEl %o found in footnotes, pop null", sup);
-    }
+    const index = findFnInfoIndex(refId);
+    let newObj : fnInfo["obj"] = null;
 
-    findFnInfo(refId, actionFound, () =>
-      plugin.fnInfo.push({ refId, docId, sourcePath, refEl: sup, pop: null })
-    );
-     
+    if (index!==-1) {
+      const info = plugin.fnInfo[index];
+      info.refEl = sup;
+      if (info.obj) {
+        const { obj } = info;
+        obj.popperInst.destroy();
+        const {inst} = obj.renderChild.createPopover(refId, obj.popperEl, sup);
+        obj.popperInst = inst
+      } else console.error("refEl %o found in footnotes, pop null", sup);
+    } else {
+      plugin.fnInfo.push({ refId, docId, sourcePath, refEl: sup, obj: null })
+    }
   }
   function callbackFn(v: Element) {
     // <li
@@ -104,86 +115,35 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     const { id: fnId } = li;
 
-    const actionFound = (info:BetterFn["fnInfo"][0]) => {
-      const { refEl, pop } = info;
-      if (pop) {
-        const popEl = pop.state.elements.popper;
-        cloneChild(li, popEl);
-      } else {
-        info.pop = createPopover(fnId, li, refEl);
-      }
-    }
+    const child = new PopperRenderChild(
+      el.appendChild(createDiv({ cls: "popper-container" })),
+      plugin.fnInfo
+    );
 
-    findFnInfo(fnId, actionFound, () =>
+    const index = findFnInfoIndex(fnId);
+
+    if (index!==-1){
+
+      const { inst, popEl } = child.createPopover(fnId,li,index);
+      
+      plugin.fnInfo[index].obj = {
+        popperInst: inst,
+        popperEl: popEl,
+        renderChild: child,
+      };
+      
+    } else {
       console.error(
         "Unable to create popover: ref info not found in %o",
         plugin.fnInfo
       )
-    );
+    }
+
+    ctx.addChild(child);
   }
 
   if (!forEach("sup.footnote-ref", callbackRef)) {
-    if (forEach("section.footnotes li", callbackFn)) el.style.display = "none";
+    if (forEach("section.footnotes li", callbackFn))
+      el.firstElementChild?.setAttr("style", "display: none;");
   }
 };
-
-
-
-/**
- * Create new Popper instance for footnote popover
- * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
- * @param childSrc source of popover content
- * @param refEl popover will be insert after this
- * @returns Popper.Instance
- */
-function createPopover(
-  id: string,
-  childSrc: HTMLElement,
-  refEl: HTMLElement
-): ReturnType<typeof createPopper> {
-  const popEl = createDiv(
-    {
-      cls: "popper",
-      attr: { id: id.replace(/^(?:fn|fnref)-/, "tt-"), role: "tooltip" },
-    },
-    (el) => {
-      const filter = (node: ChildNode) =>
-        node.nodeName !== "A" ||
-        !(node as HTMLAnchorElement).hasClass("footnote-backref");
-      cloneChild(childSrc, el, filter);
-    }
-  );
-  insertAfter(popEl, refEl);
-  const popperInstance = createPopper(refEl, popEl, PopperOption);
-  setEventHandler(popperInstance, refEl, popEl);
-  return popperInstance;
-}
-
-function setEventHandler(
-  popperInstance: ReturnType<typeof createPopper>,
-  refEl: HTMLElement,
-  popEl: HTMLElement
-) {
-  function show() {
-    popEl.setAttribute("data-show", "");
-
-    // We need to tell Popper to update the tooltip position
-    // after we show the tooltip, otherwise it will be incorrect
-    popperInstance.update();
-  }
-
-  function hide() {
-    popEl.removeAttribute("data-show");
-  }
-
-  const showEvents = ["mouseenter", "focus"];
-  const hideEvents = ["mouseleave", "blur"];
-
-  showEvents.forEach((event) => {
-    refEl.addEventListener(event, show);
-  });
-
-  hideEvents.forEach((event) => {
-    refEl.addEventListener(event, hide);
-  });
-}
