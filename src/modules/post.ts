@@ -1,13 +1,12 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor, MarkdownPostProcessorContext } from "obsidian";
-import {createPopper} from '@popperjs/core'
+import { createPopper } from "@popperjs/core";
 
 const PopperOption: Parameters<typeof createPopper>[2] = {
   placement: "top",
 };
 
 export const post: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
-
   const plugin = this;
 
   type callback = Parameters<NodeListOf<Element>["forEach"]>[0];
@@ -48,15 +47,14 @@ export const post: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
       const info = plugin.fnInfo[foundIndex];
       info.refEl = sup;
       const { pop } = info;
-      if (pop){
+      if (pop) {
         const src = pop.state.elements.popper;
         pop.destroy();
         info.pop = createPopover(refId, src, sup);
-      } else console.error("refEl %o found in footnotes, pop null",sup)
+      } else console.error("refEl %o found in footnotes, pop null", sup);
     } else {
       plugin.fnInfo.push({ refId, docId, refEl: sup, pop: null });
     }
-
   }
   function callbackFn(v: Element) {
     // <li
@@ -84,24 +82,26 @@ export const post: MarkdownPostProcessor = function (this: BetterFn, el, ctx) {
     if (foundIndex !== -1) {
       const info = plugin.fnInfo[foundIndex];
       const { refEl, pop } = info;
-      if (pop){
+      if (pop) {
         const popEl = pop.state.elements.popper;
-        cloneChild(li,popEl);
+        cloneChild(li, popEl);
       } else {
-        info.pop = createPopover(fnId,li,refEl);
+        info.pop = createPopover(fnId, li, refEl);
       }
-    } else console.error("Unable to create popover: ref info not found in %o", plugin.fnInfo)
-
+    } else
+      console.error(
+        "Unable to create popover: ref info not found in %o",
+        plugin.fnInfo
+      );
   }
 
-  if (!forEach("sup.footnote-ref",callbackRef)) {
-    if (forEach("section.footnotes li", callbackFn))
-      el.style.display = 'none';
+  if (!forEach("sup.footnote-ref", callbackRef)) {
+    if (forEach("section.footnotes li", callbackFn)) el.style.display = "none";
   }
 };
 
 /**
- * 
+ *
  * @param id "fnref-" or "fn-"
  * @param childSrc source of popover content
  * @param refEl popover will be insert after this
@@ -125,14 +125,13 @@ function createPopover(
   return popperInstance;
 }
 
-function insertAfter(newNode:Node, referenceNode:Node) {
+function insertAfter(newNode: Node, referenceNode: Node) {
   if (referenceNode.parentNode)
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-  else
-    console.error("%o has no parentNode", referenceNode);
+  else console.error("%o has no parentNode", referenceNode);
 }
 
-function cloneChild(from:HTMLElement,to:HTMLElement) {
+function cloneChild(from: HTMLElement, to: HTMLElement) {
   while (to.firstChild) to.removeChild(to.firstChild);
   from.childNodes.forEach((node) => {
     //filter backref
@@ -141,12 +140,12 @@ function cloneChild(from:HTMLElement,to:HTMLElement) {
       !(node as HTMLAnchorElement).hasClass("footnote-backref")
     )
       to.appendChild(node);
-  }); 
+  });
 }
 
 function setHover(
   popperInstance: ReturnType<typeof createPopper>,
-  refEl: HTMLElement, 
+  refEl: HTMLElement,
   popEl: HTMLElement
 ) {
   function show() {

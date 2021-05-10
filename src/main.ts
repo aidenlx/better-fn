@@ -1,6 +1,6 @@
-import { post } from 'modules/post';
-import { Plugin } from 'obsidian';
-import {createPopper} from '@popperjs/core'
+import { post } from "modules/post";
+import { Plugin } from "obsidian";
+import { createPopper } from "@popperjs/core";
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
 export default class BetterFn extends Plugin {
@@ -9,7 +9,7 @@ export default class BetterFn extends Plugin {
   fnInfo: {
     refId: string;
     docId: string;
-		refEl: HTMLElement;
+    refEl: HTMLElement;
     pop: ReturnType<typeof createPopper> | null;
   }[] = [];
 
