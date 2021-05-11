@@ -1,11 +1,18 @@
 import { MarkdownRenderChild } from "obsidian";
-import tippy, { Instance, Props } from 'tippy.js';
+import tippy, { Instance, Props, roundArrow } from 'tippy.js';
 import { cloneChild } from "./tools";
 import 'tippy.js/dist/tippy.css';
+import 'tippy.js/themes/light-border.css';
+import 'tippy.js/dist/svg-arrow.css';
 
 const PopoverOption: Partial<Props> = {
   interactive: true,
-  theme: "light"
+  theme: "light-border",
+  arrow: roundArrow,
+  placement: 'bottom',
+  delay: [200, null],
+  trigger: 'mouseenter click',
+  hideOnClick: true,
 };
 
 export type fnInfo = {
