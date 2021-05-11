@@ -5,15 +5,15 @@ import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
 import 'tippy.js/dist/svg-arrow.css';
 
-const PopoverOption: Partial<Props> = {
+tippy.setDefaultProps({
   interactive: true,
   theme: "light-border",
   arrow: roundArrow,
-  placement: 'bottom',
-  delay: [200, null],
-  trigger: 'mouseenter click',
+  placement: "bottom",
+  delay: [200, 0],
+  trigger: "mouseenter click",
   hideOnClick: true,
-};
+});
 
 export type fnInfo = {
   refId: string;
@@ -88,8 +88,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     const refEl =
       typeof indexOrEl === "number" ? this.fnInfo[indexOrEl].refEl : indexOrEl;
     const instance = tippy(refEl,{
-      content: popEl,
-      ...PopoverOption
+      content: popEl
     })
 
     const out = { instance, element: popEl };
