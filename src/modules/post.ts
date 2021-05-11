@@ -75,7 +75,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
       if (renderChild && renderChild.popovers.has(id)) {
         const popper = renderChild.popovers.get(id) as PopoverValue;
         popper.instance.destroy();
-        renderChild.createPopover(refId, popper.element, sup);
+        renderChild.createPopover(refId, popper.html, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
     } else {
       infoList.push({

@@ -4,6 +4,8 @@
 
 ## How to use
 
+Known issue: Does not seem to work with internal note embeds
+
 ## Compatibility
 
 The required API feature is only available for Obsidian v0.9.12+.

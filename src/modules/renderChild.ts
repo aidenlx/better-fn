@@ -16,6 +16,7 @@ tippy.setDefaultProps({
   hideOnClick: true,
   animation: "shift-toward-subtle",
   duration: [200, 150],
+  allowHTML: true,
 });
 
 export type bridgeInfo = {
@@ -25,7 +26,7 @@ export type bridgeInfo = {
   renderChild: PopoverRenderChild | null;
 };
 
-export type PopoverValue = { instance: Instance<Props>; element: HTMLElement };
+export type PopoverValue = { instance: Instance<Props>; html: string };
 
 export class PopoverRenderChild extends MarkdownRenderChild {
   popovers: Map<
@@ -55,37 +56,53 @@ export class PopoverRenderChild extends MarkdownRenderChild {
    */
   createPopover(srcId: string, srcEl: HTMLElement, infoIndex: number): void;
   createPopover(srcId: string, srcEl: HTMLElement, refEl: HTMLElement): void;
+  createPopover(srcId: string, html: string, infoIndex: number): void;
+  createPopover(srcId: string, html: string, refEl: HTMLElement): void;
   createPopover(
     srcId: string,
-    srcEl: HTMLElement,
+    srcElOrCode: HTMLElement | string,
     indexOrEl: number | HTMLElement
   ): void {
     const id = toPopoverId(srcId);
-    const popEl = createDiv(undefined, (el) => {
-      // remove footnote-backref from srcEl
-      const filter = srcEl.querySelectorAll("a.footnote-backref");
-      filter.forEach((match) => {
-        if (match.parentElement) match.parentElement.removeChild(match);
-      });
 
+    let html: string;
+    const srcEl = typeof srcElOrCode !== "string" ? srcElOrCode : null;
+
+    if (srcEl) {
+      // remove footnote-backref from srcEl
+      for (const match of srcEl.querySelectorAll("a.footnote-backref")) {
+        if (match.parentElement) match.parentElement.removeChild(match);
+      }
       // unwarp <p>
       const warpped = srcEl.querySelector("p");
       if (warpped) unwarp(warpped);
 
-      // clone to new <div>
-      while (srcEl.firstChild) el.appendChild(srcEl.firstChild);
-    });
+      html = srcEl.innerHTML;
+    } else html = srcElOrCode as string;
 
-    this.containerEl.appendChild(popEl);
     const refEl =
       typeof indexOrEl === "number"
         ? this.infoList[indexOrEl].refEl
         : indexOrEl;
+    
     const instance = tippy(refEl, {
-      content: popEl,
+      content: html,
     });
 
-    const out = { instance, element: popEl };
+    if (typeof srcElOrCode !== "string") {
+      const srcEl = srcElOrCode;
+      if (srcEl.querySelector("span.internal-embed")){
+        const internalEmbedObs = new MutationObserver(() =>
+          instance.setContent(srcEl.innerHTML)
+        );
+        internalEmbedObs.observe(srcEl, { childList: true, subtree: true });
+        setTimeout(() => {
+          internalEmbedObs.disconnect();
+        }, 800);
+      }
+    } 
+
+    const out = { instance, html };
     this.popovers.set(id, out);
   }
 }
