@@ -107,10 +107,13 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     const { id: fnId } = li;
 
-    const child = new PopperRenderChild(
-      el.appendChild(createDiv({ cls: "popper-container" })),
-      fnInfo
-    );
+    const find = el.querySelector("div.popper-container");
+
+    const container: HTMLElement =
+      (find as HTMLElement) ??
+      el.appendChild(createDiv({ cls: "popper-container" }));
+
+    const child = new PopperRenderChild(container, fnInfo);
 
     const index = findFnInfoIndex(fnId);
 
