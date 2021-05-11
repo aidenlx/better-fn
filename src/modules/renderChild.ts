@@ -1,10 +1,10 @@
 import { MarkdownRenderChild } from "obsidian";
-import tippy, { Instance, Props, roundArrow } from 'tippy.js';
+import tippy, { Instance, Props, roundArrow } from "tippy.js";
 import { unwarp } from "./tools";
-import 'tippy.js/dist/tippy.css';
-import 'tippy.js/themes/light-border.css';
-import 'tippy.js/dist/svg-arrow.css';
-import 'tippy.js/animations/shift-toward-subtle.css';
+import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light-border.css";
+import "tippy.js/dist/svg-arrow.css";
+import "tippy.js/animations/shift-toward-subtle.css";
 
 tippy.setDefaultProps({
   interactive: true,
@@ -25,7 +25,7 @@ export type bridgeInfo = {
   renderChild: PopoverRenderChild | null;
 };
 
-export type PopoverValue = { instance: Instance<Props>; element: HTMLElement }
+export type PopoverValue = { instance: Instance<Props>; element: HTMLElement };
 
 export class PopoverRenderChild extends MarkdownRenderChild {
   popovers: Map<
@@ -53,16 +53,8 @@ export class PopoverRenderChild extends MarkdownRenderChild {
    * @param infoIndex index used to fetch reference element from infoList
    * @returns Popper.Instance
    */
-  createPopover(
-    srcId: string,
-    srcEl: HTMLElement,
-    infoIndex: number
-  ): void;
-  createPopover(
-    srcId: string,
-    srcEl: HTMLElement,
-    refEl: HTMLElement
-  ): void;
+  createPopover(srcId: string, srcEl: HTMLElement, infoIndex: number): void;
+  createPopover(srcId: string, srcEl: HTMLElement, refEl: HTMLElement): void;
   createPopover(
     srcId: string,
     srcEl: HTMLElement,
@@ -78,25 +70,24 @@ export class PopoverRenderChild extends MarkdownRenderChild {
 
       // unwarp <p>
       const warpped = srcEl.querySelector("p");
-      if (warpped)
-        unwarp(warpped);
-      
+      if (warpped) unwarp(warpped);
+
       // clone to new <div>
       while (srcEl.firstChild) el.appendChild(srcEl.firstChild);
-
     });
-    
+
     this.containerEl.appendChild(popEl);
     const refEl =
-      typeof indexOrEl === "number" ? this.infoList[indexOrEl].refEl : indexOrEl;
-    const instance = tippy(refEl,{
-      content: popEl
-    })
+      typeof indexOrEl === "number"
+        ? this.infoList[indexOrEl].refEl
+        : indexOrEl;
+    const instance = tippy(refEl, {
+      content: popEl,
+    });
 
     const out = { instance, element: popEl };
     this.popovers.set(id, out);
   }
-
 }
 
 export function toPopoverId(srcId: string) {
