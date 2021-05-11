@@ -5,57 +5,54 @@ import {
   MarkdownView,
   Plugin,
   TAbstractFile,
+  TextFileView,
 } from "obsidian";
 import "./main.css";
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
+type onLoadFileModified = TextFileView["onLoadFile"] & {
+  modified?: boolean;
+};
 export default class BetterFn extends Plugin {
   // settings: BetterFnSettings = DEFAULT_SETTINGS;
 
   PopoverHandler = PopoverHandler.bind(this);
 
-  /** Update path in bridgeInfo when file is renamed or moved */
-  renameAction(file: TAbstractFile, oldPath: string) {
-    this.iterateAllInfo((infoList) => {
-      for (const info of infoList) {
-        if (info.sourcePath === oldPath) info.sourcePath = file.path;
+  onLoadFileBak?: TextFileView["onLoadFile"];
+
+  /** Remove redundant element from fnInfo */
+  modifyOnLoadFile = () => {
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (
+        leaf.view instanceof MarkdownView &&
+        !(leaf.view.onLoadFile as onLoadFileModified).modified
+      ) {
+        const view = leaf.view;
+        const src = leaf.view.onLoadFile;
+        if (!this.onLoadFileBak) this.onLoadFileBak = src;
+        view.onLoadFile = (file) => {
+          // custom code here
+          (
+            view.previewMode.containerEl.querySelector(
+              ".markdown-preview-section"
+            ) as BridgeEl
+          ).infoList = undefined;
+
+          return src.bind(view)(file);
+        };
+        (view.onLoadFile as onLoadFileModified).modified = true;
       }
     });
-  }
-
-  layoutChangedTimes = 0;
-  checkFreq = 20;
-  /** Remove redundant element from fnInfo */
-  layoutChangedAction = () => {
-    this.layoutChangedTimes++;
-
-    if (this.layoutChangedTimes >= this.checkFreq) {
-      this.layoutChangedTimes = 0;
-
-      const paths: string[] = [];
-      this.app.workspace.iterateAllLeaves((leaf) => {
-        if (leaf.view instanceof MarkdownView) paths.push(leaf.view.file.path);
-      });
-
-      this.iterateAllInfo((infoList) => {
-        let index = infoList.findIndex((v) => !paths.includes(v.sourcePath));
-        while (index !== -1) {
-          infoList.splice(index, 1);
-          index = infoList.findIndex((v) => !paths.includes(v.sourcePath));
-        }
-      });
-    }
   };
 
-  iterateAllInfo(callback: (infoList: bridgeInfo[]) => any) {
+  revertOnLoadFile = () => {
     this.app.workspace.iterateAllLeaves((leaf) => {
       if (leaf.view instanceof MarkdownView) {
-        const infoList = (
-          leaf.view.previewMode.containerEl.querySelector(
-            ".markdown-preview-section"
-          ) as BridgeEl
-        ).infoList;
-        if (infoList) callback(infoList);
+        if (
+          (leaf.view.onLoadFile as onLoadFileModified).modified &&
+          this.onLoadFileBak
+        )
+          leaf.view.onLoadFile = this.onLoadFileBak.bind(leaf.view);
       }
     });
   }
@@ -66,8 +63,8 @@ export default class BetterFn extends Plugin {
     // await this.loadSettings();
 
     this.registerMarkdownPostProcessor(this.PopoverHandler);
-    this.app.vault.on("rename", this.renameAction);
-    this.app.workspace.on("layout-change", this.layoutChangedAction);
+    this.modifyOnLoadFile();
+    this.app.workspace.on("layout-change", this.modifyOnLoadFile);
 
     // this.addSettingTab(new BetterFnSettingTab(this.app, this));
   }
@@ -76,8 +73,8 @@ export default class BetterFn extends Plugin {
     console.log("unloading BetterFn");
 
     MarkdownPreviewRenderer.unregisterPostProcessor(this.PopoverHandler);
-    this.app.vault.off("rename", this.renameAction);
-    this.app.workspace.off("layout-change", this.layoutChangedAction);
+    this.app.workspace.off("layout-change", this.modifyOnLoadFile);
+    this.revertOnLoadFile();
   }
 
   // async loadSettings() {
