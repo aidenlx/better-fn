@@ -1,10 +1,10 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
 import { empty } from "./tools";
-import { fnInfo, PopoverRenderChild, PopoverValue, toPopoverId } from "./renderChild";
+import { bridgeInfo, PopoverRenderChild, PopoverValue, toPopoverId } from "./renderChild";
 
-interface BridgeEl extends HTMLElement {
-  fnInfo: fnInfo[];
+export interface BridgeEl extends HTMLElement {
+  infoList?: bridgeInfo[];
 }
 
 // prettier-ignore
@@ -13,9 +13,9 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 ) {
   // @ts-ignore
   const bridge = ctx.containerEl as BridgeEl;
-  if (!bridge.fnInfo) bridge.fnInfo = [];
+  if (!bridge.infoList) bridge.infoList = [];
 
-  const fnInfo = bridge.fnInfo;
+  const { infoList } = bridge;
 
   type callback = Parameters<NodeListOf<Element>["forEach"]>[0];
 
@@ -34,13 +34,8 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   /**
    * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
    */
-  function findFnInfoIndex(id: string): number {
-    return fnInfo.findIndex(
-      (v) =>
-        v.docId === ctx.docId &&
-        v.sourcePath === ctx.sourcePath &&
-        v.refId === id.replace(/^fn-/, "fnref-")
-    );
+  function findInfoIndex(id: string): number {
+    return infoList.findIndex((v) => v.refId === id.replace(/^fn-/, "fnref-"));
   }
 
   function callbackRef(v: Element) {
@@ -59,17 +54,16 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     const sup = v as HTMLElement;
 
     const { id: refId, innerText: srcText } = sup;
-    const { docId, sourcePath } = ctx;
-
+    const { sourcePath } = ctx;
     empty(sup);
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 
-    const index = findFnInfoIndex(refId);
+    const index = findInfoIndex(refId);
     const id = toPopoverId(refId);
 
     if (index !== -1) {
-      const info = fnInfo[index];
+      const info = infoList[index];
       const { renderChild } = info;
       info.refEl = sup;
 
@@ -79,9 +73,8 @@ export const PopoverHandler: MarkdownPostProcessor = function (
         renderChild.createPopover(refId, popper.element, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
     } else {
-      fnInfo.push({
+      infoList.push({
         refId,
-        docId,
         sourcePath,
         refEl: sup,
         renderChild: null,
@@ -113,17 +106,17 @@ export const PopoverHandler: MarkdownPostProcessor = function (
       (find as HTMLElement) ??
       el.appendChild(createDiv({ cls: "popper-container" }));
 
-    const child = new PopoverRenderChild(container, fnInfo);
+    const child = new PopoverRenderChild(container, infoList);
 
-    const index = findFnInfoIndex(fnId);
+    const index = findInfoIndex(fnId);
 
     if (index !== -1) {
       child.createPopover(fnId, li, index);
-      fnInfo[index].renderChild = child;
+      infoList[index].renderChild = child;
     } else
       console.error(
         "Unable to create popover: ref info not found in %o",
-        fnInfo
+        infoList
       );
 
     ctx.addChild(child);

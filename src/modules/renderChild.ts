@@ -18,9 +18,8 @@ tippy.setDefaultProps({
   duration: [200, 150],
 });
 
-export type fnInfo = {
+export type bridgeInfo = {
   refId: string;
-  docId: string;
   sourcePath: string;
   refEl: HTMLElement;
   renderChild: PopoverRenderChild | null;
@@ -33,7 +32,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     string, // id: pp-...
     PopoverValue
   >;
-  fnInfo: fnInfo[];
+  infoList: bridgeInfo[];
 
   unload() {
     for (const popper of this.popovers.values()) {
@@ -41,9 +40,9 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     }
   }
 
-  constructor(containerEl: HTMLElement, info: fnInfo[]) {
+  constructor(containerEl: HTMLElement, info: bridgeInfo[]) {
     super(containerEl);
-    this.fnInfo = info;
+    this.infoList = info;
     this.popovers = new Map();
   }
 
@@ -51,7 +50,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
    * Create new Popper instance for footnote popover
    * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
    * @param srcEl the element whose children will be used as popover content
-   * @param infoIndex index used to fetch reference element from fnInfo
+   * @param infoIndex index used to fetch reference element from infoList
    * @returns Popper.Instance
    */
   createPopover(
@@ -89,7 +88,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     
     this.containerEl.appendChild(popEl);
     const refEl =
-      typeof indexOrEl === "number" ? this.fnInfo[indexOrEl].refEl : indexOrEl;
+      typeof indexOrEl === "number" ? this.infoList[indexOrEl].refEl : indexOrEl;
     const instance = tippy(refEl,{
       content: popEl
     })
