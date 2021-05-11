@@ -1,6 +1,7 @@
 import { MarkdownRenderChild } from "obsidian";
 import tippy, { Instance, Props } from 'tippy.js';
 import { cloneChild } from "./tools";
+import 'tippy.js/dist/tippy.css';
 
 const PopoverOption: Partial<Props> = {
   interactive: true,
