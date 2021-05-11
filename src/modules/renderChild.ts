@@ -58,17 +58,17 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     srcId: string,
     srcEl: HTMLElement,
     infoIndex: number
-  ): PopoverValue;
+  ): void;
   createPopover(
     srcId: string,
     srcEl: HTMLElement,
     refEl: HTMLElement
-  ): PopoverValue;
+  ): void;
   createPopover(
     srcId: string,
     srcEl: HTMLElement,
     indexOrEl: number | HTMLElement
-  ): PopoverValue {
+  ): void {
     const id = toPopoverId(srcId);
     const popEl = createDiv(undefined, (el) => {
       // remove footnote-backref from srcEl
@@ -96,7 +96,6 @@ export class PopoverRenderChild extends MarkdownRenderChild {
 
     const out = { instance, element: popEl };
     this.popovers.set(id, out);
-    return out;
   }
 
 }
