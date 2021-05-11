@@ -1,7 +1,6 @@
 import { PopoverHandler } from "modules/post";
-import { MarkdownPreviewRenderer, MarkdownView, Plugin, TAbstractFile } from "obsidian";
-import { createPopper } from "@popperjs/core";
-import { fnInfo } from "modules/renderChild";
+import { MarkdownPreviewRenderer, Plugin } from "obsidian";
+import "./main.css"
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
 export default class BetterFn extends Plugin {
