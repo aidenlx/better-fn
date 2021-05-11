@@ -1,6 +1,6 @@
 import { MarkdownRenderChild } from "obsidian";
 import tippy, { Instance, Props, roundArrow } from 'tippy.js';
-import { cloneChild } from "./tools";
+import { unwarp } from "./tools";
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
 import 'tippy.js/dist/svg-arrow.css';
@@ -68,11 +68,22 @@ export class PopoverRenderChild extends MarkdownRenderChild {
   ): PopoverValue {
     const id = toPopoverId(srcId);
     const popEl = createDiv(undefined, (el) => {
-        const filter = (node: ChildNode) =>
-          node.nodeName !== "A" ||
-          !(node as HTMLAnchorElement).hasClass("footnote-backref");
-        cloneChild(srcEl, el, filter);
+      // remove footnote-backref from srcEl
+      const filter = srcEl.querySelectorAll("a.footnote-backref");
+      filter.forEach((match) => {
+        if (match.parentElement) match.parentElement.removeChild(match);
+      });
+
+      // unwarp <p>
+      const warpped = srcEl.querySelector("p");
+      if (warpped)
+        unwarp(warpped);
+      
+      // clone to new <div>
+      while (srcEl.firstChild) el.appendChild(srcEl.firstChild);
+
     });
+    
     this.containerEl.appendChild(popEl);
     const refEl =
       typeof indexOrEl === "number" ? this.fnInfo[indexOrEl].refEl : indexOrEl;
@@ -82,7 +93,6 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     })
 
     const out = { instance, element: popEl };
-    console.log(out);
     this.popovers.set(id, out);
     return out;
   }

@@ -1,4 +1,3 @@
-
 /** Remove all child nodes of the element from the DOM. */
 export function empty(el: HTMLElement): void {
   while (el.firstChild) el.removeChild(el.firstChild);
@@ -12,14 +11,14 @@ export function insertAfter(newNode: Node, referenceNode: Node): boolean {
   return Boolean(referenceNode.parentNode);
 }
 
+export function unwarp(el: HTMLElement) {
+  // get the element's parent node
+  const parent = el.parentNode;
 
-export function cloneChild(
-  from: HTMLElement,
-  to: HTMLElement,
-  filter?: (node:ChildNode) => boolean
-) {
-  empty(to);
-  from.childNodes.forEach((node) => {
-    if (!filter || filter(node)) to.appendChild(node);
-  });
+  if (parent) {
+    // move all children out of the element
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    // remove the empty element
+    parent.removeChild(el);
+  }
 }
