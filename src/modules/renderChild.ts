@@ -11,26 +11,27 @@ export type fnInfo = {
   docId: string;
   sourcePath: string;
   refEl: HTMLElement;
-  obj: {
-    renderChild: PopperRenderChild;
-    popperInst: Instance;
-    popperEl: HTMLElement;
-  } | null;
+  renderChild: PopperRenderChild | null;
 };
 
+export type PopperValue = { instance: Instance; element: HTMLElement }
 export class PopperRenderChild extends MarkdownRenderChild {
-  instances: popperInst[] = [];
+  poppers: Map<
+    string, // id: pp-...
+    PopperValue
+  >;
   fnInfo: fnInfo[];
 
   unload() {
-    for (const inst of this.instances) {
-      inst.destroy();
+    for (const popper of this.poppers.values()) {
+      popper.instance.destroy();
     }
   }
 
   constructor(containerEl: HTMLElement, info: fnInfo[]) {
     super(containerEl);
     this.fnInfo = info;
+    this.poppers = new Map();
   }
 
   /**
@@ -41,24 +42,25 @@ export class PopperRenderChild extends MarkdownRenderChild {
    * @returns Popper.Instance
    */
   createPopover(
-    id: string,
+    srcId: string,
     srcEl: HTMLElement,
     infoIndex: number
-  ): { inst: Instance; popEl: HTMLElement };
+  ): PopperValue;
   createPopover(
-    id: string,
+    srcId: string,
     srcEl: HTMLElement,
     refEl: HTMLElement
-  ): { inst: Instance; popEl: HTMLElement };
+  ): PopperValue;
   createPopover(
-    id: string,
+    srcId: string,
     srcEl: HTMLElement,
     indexOrEl: number | HTMLElement
-  ): { inst: Instance; popEl: HTMLElement } {
+  ): PopperValue {
+    const id = toPopperId(srcId);
     const popEl = createDiv(
       {
         cls: "popper",
-        attr: { id: id.replace(/^(?:fn|fnref)-/, "tt-"), role: "tooltip" },
+        attr: { id, role: "tooltip" },
       },
       (el) => {
         const filter = (node: ChildNode) =>
@@ -72,9 +74,16 @@ export class PopperRenderChild extends MarkdownRenderChild {
       typeof indexOrEl === "number" ? this.fnInfo[indexOrEl].refEl : indexOrEl;
     const popperInstance = createPopper(refEl, popEl, PopperOption);
     setEventHandler(popperInstance, refEl, popEl);
-    this.instances.push(popperInstance);
-    return { inst: popperInstance, popEl };
+
+    const out = { instance: popperInstance, element: popEl };
+    this.poppers.set(id, out);
+    return out;
   }
+
+}
+
+export function toPopperId(srcId: string) {
+  return srcId.replace(/^(?:fn|fnref)-/, "tt-");
 }
 
 function setEventHandler(

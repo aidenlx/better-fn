@@ -1,15 +1,21 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
 import { empty } from "./tools";
-import { fnInfo, PopperRenderChild } from "./renderChild";
+import { fnInfo, PopperRenderChild, PopperValue, toPopperId } from "./renderChild";
 
-
+interface BridgeEl extends HTMLElement {
+  fnInfo: fnInfo[];
+}
 
 // prettier-ignore
 export const PopoverHandler: MarkdownPostProcessor = function (
   this: BetterFn, el, ctx
 ) {
-  const plugin = this;
+  // @ts-ignore
+  const bridge = ctx.containerEl as BridgeEl;
+  if (!bridge.fnInfo) bridge.fnInfo = [];
+
+  const fnInfo = bridge.fnInfo;
 
   type callback = Parameters<NodeListOf<Element>["forEach"]>[0];
 
@@ -26,31 +32,10 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   }
 
   /**
-   * Performs the specified action for object that matches id
-   * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
-   * @param ifFound action when object is found
-   * @param notFound action when no match is found
-   */
-  function findFnInfo(
-    id: string,
-    ifFound?: (found: BetterFn["fnInfo"][0]) => void,
-    notFound?: () => void
-  ) {
-    const foundIndex = plugin.fnInfo.findIndex(
-      (v) =>
-        v.docId === ctx.docId &&
-        v.sourcePath === ctx.sourcePath &&
-        v.refId === id.replace(/^fn-/, "fnref-")
-    );
-    if (foundIndex !== -1 && ifFound) ifFound(plugin.fnInfo[foundIndex]);
-    else if (notFound) notFound();
-  }
-
-  /**
    * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
    */
   function findFnInfoIndex(id: string): number {
-    return plugin.fnInfo.findIndex(
+    return fnInfo.findIndex(
       (v) =>
         v.docId === ctx.docId &&
         v.sourcePath === ctx.sourcePath &&
@@ -78,22 +63,29 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     empty(sup);
     sup.innerText = srcText;
-    sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "tt-"));
+    sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 
     const index = findFnInfoIndex(refId);
-    let newObj : fnInfo["obj"] = null;
+    const id = toPopperId(refId);
 
-    if (index!==-1) {
-      const info = plugin.fnInfo[index];
+    if (index !== -1) {
+      const info = fnInfo[index];
+      const { renderChild } = info;
       info.refEl = sup;
-      if (info.obj) {
-        const { obj } = info;
-        obj.popperInst.destroy();
-        const {inst} = obj.renderChild.createPopover(refId, obj.popperEl, sup);
-        obj.popperInst = inst
+
+      if (renderChild && renderChild.poppers.has(id)) {
+        const popper = renderChild.poppers.get(id) as PopperValue;
+        popper.instance.destroy();
+        renderChild.createPopover(refId, popper.element, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
     } else {
-      plugin.fnInfo.push({ refId, docId, sourcePath, refEl: sup, obj: null })
+      fnInfo.push({
+        refId,
+        docId,
+        sourcePath,
+        refEl: sup,
+        renderChild: null,
+      });
     }
   }
   function callbackFn(v: Element) {
@@ -117,27 +109,19 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     const child = new PopperRenderChild(
       el.appendChild(createDiv({ cls: "popper-container" })),
-      plugin.fnInfo
+      fnInfo
     );
 
     const index = findFnInfoIndex(fnId);
 
-    if (index!==-1){
-
-      const { inst, popEl } = child.createPopover(fnId,li,index);
-      
-      plugin.fnInfo[index].obj = {
-        popperInst: inst,
-        popperEl: popEl,
-        renderChild: child,
-      };
-      
-    } else {
+    if (index !== -1) {
+      child.createPopover(fnId, li, index);
+      fnInfo[index].renderChild = child;
+    } else
       console.error(
         "Unable to create popover: ref info not found in %o",
-        plugin.fnInfo
-      )
-    }
+        fnInfo
+      );
 
     ctx.addChild(child);
   }
