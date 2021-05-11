@@ -4,15 +4,18 @@ import { unwarp } from "./tools";
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
 import 'tippy.js/dist/svg-arrow.css';
+import 'tippy.js/animations/shift-toward-subtle.css';
 
 tippy.setDefaultProps({
   interactive: true,
   theme: "light-border",
   arrow: roundArrow,
   placement: "bottom",
-  delay: [200, 0],
+  delay: [100, 0],
   trigger: "mouseenter click",
   hideOnClick: true,
+  animation: "shift-toward-subtle",
+  duration: [200, 150],
 });
 
 export type fnInfo = {
