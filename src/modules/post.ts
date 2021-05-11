@@ -1,7 +1,7 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
 import { empty } from "./tools";
-import { fnInfo, PopperRenderChild, PopperValue, toPopperId } from "./renderChild";
+import { fnInfo, PopoverRenderChild, PopoverValue, toPopoverId } from "./renderChild";
 
 interface BridgeEl extends HTMLElement {
   fnInfo: fnInfo[];
@@ -66,15 +66,15 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 
     const index = findFnInfoIndex(refId);
-    const id = toPopperId(refId);
+    const id = toPopoverId(refId);
 
     if (index !== -1) {
       const info = fnInfo[index];
       const { renderChild } = info;
       info.refEl = sup;
 
-      if (renderChild && renderChild.poppers.has(id)) {
-        const popper = renderChild.poppers.get(id) as PopperValue;
+      if (renderChild && renderChild.popovers.has(id)) {
+        const popper = renderChild.popovers.get(id) as PopoverValue;
         popper.instance.destroy();
         renderChild.createPopover(refId, popper.element, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
@@ -113,7 +113,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
       (find as HTMLElement) ??
       el.appendChild(createDiv({ cls: "popper-container" }));
 
-    const child = new PopperRenderChild(container, fnInfo);
+    const child = new PopoverRenderChild(container, fnInfo);
 
     const index = findFnInfoIndex(fnId);
 

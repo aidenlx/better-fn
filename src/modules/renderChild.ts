@@ -1,9 +1,10 @@
 import { MarkdownRenderChild } from "obsidian";
-import { createPopper, Instance, Instance as popperInst } from "@popperjs/core";
+import tippy, { Instance, Props } from 'tippy.js';
 import { cloneChild } from "./tools";
 
-const PopperOption: Parameters<typeof createPopper>[2] = {
-  placement: "top",
+const PopoverOption: Partial<Props> = {
+  interactive: true,
+  theme: "light"
 };
 
 export type fnInfo = {
@@ -11,19 +12,20 @@ export type fnInfo = {
   docId: string;
   sourcePath: string;
   refEl: HTMLElement;
-  renderChild: PopperRenderChild | null;
+  renderChild: PopoverRenderChild | null;
 };
 
-export type PopperValue = { instance: Instance; element: HTMLElement }
-export class PopperRenderChild extends MarkdownRenderChild {
-  poppers: Map<
+export type PopoverValue = { instance: Instance<Props>; element: HTMLElement }
+
+export class PopoverRenderChild extends MarkdownRenderChild {
+  popovers: Map<
     string, // id: pp-...
-    PopperValue
+    PopoverValue
   >;
   fnInfo: fnInfo[];
 
   unload() {
-    for (const popper of this.poppers.values()) {
+    for (const popper of this.popovers.values()) {
       popper.instance.destroy();
     }
   }
@@ -31,7 +33,7 @@ export class PopperRenderChild extends MarkdownRenderChild {
   constructor(containerEl: HTMLElement, info: fnInfo[]) {
     super(containerEl);
     this.fnInfo = info;
-    this.poppers = new Map();
+    this.popovers = new Map();
   }
 
   /**
@@ -45,72 +47,40 @@ export class PopperRenderChild extends MarkdownRenderChild {
     srcId: string,
     srcEl: HTMLElement,
     infoIndex: number
-  ): PopperValue;
+  ): PopoverValue;
   createPopover(
     srcId: string,
     srcEl: HTMLElement,
     refEl: HTMLElement
-  ): PopperValue;
+  ): PopoverValue;
   createPopover(
     srcId: string,
     srcEl: HTMLElement,
     indexOrEl: number | HTMLElement
-  ): PopperValue {
-    const id = toPopperId(srcId);
-    const popEl = createDiv(
-      {
-        cls: "popper",
-        attr: { id, role: "tooltip" },
-      },
-      (el) => {
+  ): PopoverValue {
+    const id = toPopoverId(srcId);
+    const popEl = createDiv(undefined, (el) => {
         const filter = (node: ChildNode) =>
           node.nodeName !== "A" ||
           !(node as HTMLAnchorElement).hasClass("footnote-backref");
         cloneChild(srcEl, el, filter);
-      }
-    );
+    });
     this.containerEl.appendChild(popEl);
     const refEl =
       typeof indexOrEl === "number" ? this.fnInfo[indexOrEl].refEl : indexOrEl;
-    const popperInstance = createPopper(refEl, popEl, PopperOption);
-    setEventHandler(popperInstance, refEl, popEl);
+    const instance = tippy(refEl,{
+      content: popEl,
+      ...PopoverOption
+    })
 
-    const out = { instance: popperInstance, element: popEl };
-    this.poppers.set(id, out);
+    const out = { instance, element: popEl };
+    console.log(out);
+    this.popovers.set(id, out);
     return out;
   }
 
 }
 
-export function toPopperId(srcId: string) {
-  return srcId.replace(/^(?:fn|fnref)-/, "tt-");
-}
-
-function setEventHandler(
-  popperInstance: popperInst,
-  refEl: HTMLElement,
-  popEl: HTMLElement
-) {
-  function show() {
-    popEl.setAttribute("data-show", "");
-
-    // We need to tell Popper to update the tooltip position
-    // after we show the tooltip, otherwise it will be incorrect
-    popperInstance.update();
-  }
-
-  function hide() {
-    popEl.removeAttribute("data-show");
-  }
-
-  const showEvents = ["mouseenter", "focus"];
-  const hideEvents = ["mouseleave", "blur"];
-
-  showEvents.forEach((event) => {
-    refEl.addEventListener(event, show);
-  });
-
-  hideEvents.forEach((event) => {
-    refEl.addEventListener(event, hide);
-  });
+export function toPopoverId(srcId: string) {
+  return srcId.replace(/^(?:fn|fnref)-/, "pop-");
 }
