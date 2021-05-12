@@ -21,3 +21,8 @@ sup.footnote-ref {
 .tippy-content > span.internal-embed {
   min-width: 20em;
 }
+
+.tippy-content {
+  max-height: 20em;
+  overflow-x: auto;
+}
