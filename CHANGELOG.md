@@ -1,3 +1,11 @@
+# [0.2.0](https://github.com/alx-plugins/better-fn/compare/0.1.1...0.2.0) (2021-05-12)
+
+
+### Features
+
+* **main.css:** add max-height and scroll for popover content ([2ed8730](https://github.com/alx-plugins/better-fn/commit/2ed8730124037f350753ab597a79191159d2dfca))
+* **main.css:** add min width for internal note embed in popover ([308b67d](https://github.com/alx-plugins/better-fn/commit/308b67dfabbe5c443c3c623d98994e9a3fd64a6b))
+
 ## [0.1.1](https://github.com/alx-plugins/better-fn/compare/0.1.0...0.1.1) (2021-05-12)
 
 
