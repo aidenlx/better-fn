@@ -17,3 +17,7 @@ sup.footnote-ref {
   clip-path: inset(100%);
   overflow: hidden;
 }
+
+.tippy-content > span.internal-embed {
+  min-width: 20em;
+}
