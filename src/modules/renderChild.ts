@@ -33,11 +33,15 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     string, // id: pp-...
     PopoverValue
   >;
+  mdObservers: MutationObserver[];
   infoList: bridgeInfo[];
 
   unload() {
     for (const popper of this.popovers.values()) {
       popper.instance.destroy();
+    }
+    for (const observer of this.mdObservers) {
+      observer.disconnect();
     }
   }
 
@@ -45,6 +49,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     super(containerEl);
     this.infoList = info;
     this.popovers = new Map();
+    this.mdObservers = [];
   }
 
   /**
@@ -84,23 +89,55 @@ export class PopoverRenderChild extends MarkdownRenderChild {
       typeof indexOrEl === "number"
         ? this.infoList[indexOrEl].refEl
         : indexOrEl;
-    
+
     const instance = tippy(refEl, {
       content: html,
     });
 
+    // Monitor internal embed loadings
     if (typeof srcElOrCode !== "string") {
       const srcEl = srcElOrCode;
-      if (srcEl.querySelector("span.internal-embed")){
-        const internalEmbedObs = new MutationObserver(() =>
-          instance.setContent(srcEl.innerHTML)
+      let all;
+      if ((all = srcEl.querySelectorAll("span.internal-embed"))) {
+        const markdownEmbedObs = new MutationObserver(
+          () => instance.setContent(srcEl.innerHTML)
+          // observer should keep connected to track updates in embeded content
         );
-        internalEmbedObs.observe(srcEl, { childList: true, subtree: true });
-        setTimeout(() => {
-          internalEmbedObs.disconnect();
-        }, 800);
+        const internalEmbedObs = new MutationObserver(
+          (mutationList, observer) => {
+            for (const mutation of mutationList) {
+              const span = mutation.target as HTMLSpanElement;
+              if (mutation.type !== "attributes")
+                throw new Error(
+                  "wrong mutaion observe option, found muation: " +
+                    mutation.type
+                );
+              if (
+                mutation.attributeName === "class" &&
+                span.hasClass("is-loaded")
+              ) {
+                if (
+                  span.firstElementChild?.tagName === "DIV" &&
+                  span.firstElementChild.hasClass("markdown-embed")
+                )
+                  markdownEmbedObs.observe(span.firstElementChild, {
+                    childList: true,
+                    subtree: true,
+                  });
+                else instance.setContent(srcEl.innerHTML);
+
+                observer.disconnect();
+              }
+            }
+          }
+        );
+
+        for (const span of all) {
+          internalEmbedObs.observe(span, { attributes: true });
+        }
+        this.mdObservers.push(markdownEmbedObs);
       }
-    } 
+    }
 
     const out = { instance, html };
     this.popovers.set(id, out);

@@ -127,8 +127,11 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     ctx.addChild(child);
   }
 
-  if (!forEach("sup.footnote-ref", callbackRef)) {
-    if (forEach("section.footnotes li", callbackFn))
-      el.firstElementChild?.setAttr("style", "display: none;");
+  const refProcess = forEach("sup.footnote-ref", callbackRef);
+  if (!refProcess) {
+    const fnProcess = forEach("section.footnotes li", callbackFn);
+    if (fnProcess) el.firstElementChild?.addClass("visuallyhidden");
+    // NOTE: using "display:none" or hidden will block markdown-preview-pusher
   }
+  
 };
