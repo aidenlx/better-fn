@@ -26,6 +26,12 @@ export type bridgeInfo = {
   renderChild: PopoverRenderChild | null;
 };
 
+        
+type mutationParam = {
+  callback: MutationCallback;
+  option: MutationObserverInit;
+}
+
 export type PopoverValue = { instance: Instance<Props>; html: string };
 
 export class PopoverRenderChild extends MarkdownRenderChild {
@@ -33,15 +39,11 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     string, // id: pp-...
     PopoverValue
   >;
-  mdObservers: MutationObserver[];
   infoList: bridgeInfo[];
 
   unload() {
     for (const popper of this.popovers.values()) {
       popper.instance.destroy();
-    }
-    for (const observer of this.mdObservers) {
-      observer.disconnect();
     }
   }
 
@@ -49,7 +51,6 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     super(containerEl);
     this.infoList = info;
     this.popovers = new Map();
-    this.mdObservers = [];
   }
 
   /**
@@ -99,43 +100,41 @@ export class PopoverRenderChild extends MarkdownRenderChild {
       const srcEl = srcElOrCode;
       let all;
       if ((all = srcEl.querySelectorAll("span.internal-embed"))) {
-        const markdownEmbedObs = new MutationObserver(
-          () => instance.setContent(srcEl.innerHTML)
-          // observer should keep connected to track updates in embeded content
-        );
-        const internalEmbedObs = new MutationObserver(
-          (mutationList, observer) => {
-            for (const mutation of mutationList) {
-              const span = mutation.target as HTMLSpanElement;
-              if (mutation.type !== "attributes")
-                throw new Error(
-                  "wrong mutaion observe option, found muation: " +
-                    mutation.type
-                );
-              if (
-                mutation.attributeName === "class" &&
-                span.hasClass("is-loaded")
-              ) {
-                if (
-                  span.firstElementChild?.tagName === "DIV" &&
-                  span.firstElementChild.hasClass("markdown-embed")
-                )
-                  markdownEmbedObs.observe(span.firstElementChild, {
-                    childList: true,
-                    subtree: true,
-                  });
-                else instance.setContent(srcEl.innerHTML);
 
-                observer.disconnect();
+        const markdownEmbed: mutationParam = {
+          // observer should keep connected to track updates in embeded content
+          callback: () => instance.setContent(srcEl.innerHTML),
+          // If the element being observed is removed from the DOM, 
+          // and then subsequently released by the browser's garbage collection mechanism,
+          // the MutationObserver is likewise deleted.
+          option: {
+            childList: true,
+            subtree: true,
+          },
+        };
+
+        const internalEmbed: mutationParam = {
+          callback: (list, obs) => {
+            for (const mutation of list) {
+              const span = mutation.target as HTMLSpanElement;
+
+              if (span.hasClass("is-loaded")) {
+                if (span.firstElementChild?.matches("div.markdown-embed")) {
+                  const mdObs = new MutationObserver(markdownEmbed.callback);
+                  mdObs.observe(span.firstElementChild, markdownEmbed.option);
+                } else instance.setContent(srcEl.innerHTML);
+                obs.disconnect();
               }
             }
-          }
-        );
+          },
+          option: { attributeFilter: ["class"] },
+        };
 
         for (const span of all) {
-          internalEmbedObs.observe(span, { attributes: true });
+          const ieObs = new MutationObserver(internalEmbed.callback);
+          ieObs.observe(span,internalEmbed.option);
         }
-        this.mdObservers.push(markdownEmbedObs);
+
       }
     }
 
