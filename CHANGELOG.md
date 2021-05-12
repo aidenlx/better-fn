@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/alx-plugins/better-fn/compare/0.1.0...0.1.1) (2021-05-12)
+
+
+### Bug Fixes
+
+* popover now work with internal note embeds ([59810c6](https://github.com/alx-plugins/better-fn/commit/59810c6f59438e84aa9cbc9ca7cd4e275b18f8df))
+
 # 0.1.0 (2021-05-11)
 
 
