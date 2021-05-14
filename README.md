@@ -1,8 +1,14 @@
 # BetterFn
 
-## Intro
+Turning footnote into popover
+
+![BetterFnDemo](https://img.aidenlx.top/picgo/BetterFnDemo.gif)
 
 ## How to use
+
+Hover on footnote to quick preview footnote.
+
+Click on footnote to show footnote as popover.
 
 ## Compatibility
 
