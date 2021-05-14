@@ -71,7 +71,7 @@ export default class BetterFn extends Plugin {
         }
       });
     };
-
+  
   layoutChangeCallback = this.doAllLeaves(this.modifyOnUnloadFile);
 
   async onload() {
@@ -80,7 +80,9 @@ export default class BetterFn extends Plugin {
     // await this.loadSettings();
 
     this.registerMarkdownPostProcessor(this.PopoverHandler);
-    this.app.workspace.on("layout-change", this.layoutChangeCallback);
+    this.registerEvent(
+      this.app.workspace.on("layout-change", this.layoutChangeCallback)
+    );
     this.doAllLeaves(this.modifyOnUnloadFile, this.refresh)();
 
     // this.addSettingTab(new BetterFnSettingTab(this.app, this));
@@ -90,7 +92,6 @@ export default class BetterFn extends Plugin {
     console.log("unloading BetterFn");
 
     MarkdownPreviewRenderer.unregisterPostProcessor(this.PopoverHandler);
-    this.app.workspace.off("layout-change", this.layoutChangeCallback);
     this.doAllLeaves(this.revertOnUnloadFile, this.refresh)();
   }
 
