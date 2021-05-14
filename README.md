@@ -2,7 +2,7 @@
 
 Turning footnote into popover
 
-![BetterFnDemo](https://img.aidenlx.top/picgo/BetterFnDemo.gif)
+![BetterFnDemo](https://user-images.githubusercontent.com/31102694/118202596-d8c2d380-b48c-11eb-9777-d2992fa96ed5.gif)
 
 ## How to use
 
