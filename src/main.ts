@@ -1,16 +1,16 @@
-import { BridgeEl, PopoverHandler } from "modules/post";
-import { bridgeInfo } from "modules/renderChild";
+import { BridgeEl, PopoverHandler } from "./processor";
 import {
   MarkdownPreviewRenderer,
   MarkdownView,
-  Notice,
   Plugin,
-  TAbstractFile,
   TextFileView,
+  Workspace,
   WorkspaceLeaf,
 } from "obsidian";
 import "./main.css";
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
+
+type leafAction = Parameters<Workspace["iterateAllLeaves"]>[0];
 
 type onUnloadFileModified = TextFileView["onUnloadFile"] & {
   modified?: boolean;
@@ -23,7 +23,7 @@ export default class BetterFn extends Plugin {
   onUnloadFileBak?: TextFileView["onUnloadFile"];
 
   /** Remove redundant element from fnInfo */
-  modifyOnUnloadFile = (leaf: WorkspaceLeaf) => {
+  modifyOnUnloadFile: leafAction = (leaf) => {
     if (
       leaf.view instanceof MarkdownView &&
       !(leaf.view.onUnloadFile as onUnloadFileModified).modified
@@ -46,7 +46,7 @@ export default class BetterFn extends Plugin {
     }
   };
 
-  revertOnUnloadFile = (leaf: WorkspaceLeaf) => {
+  revertOnUnloadFile: leafAction = (leaf) => {
     if (leaf.view instanceof MarkdownView) {
       if (
         (leaf.view.onUnloadFile as onUnloadFileModified).modified &&
@@ -57,13 +57,13 @@ export default class BetterFn extends Plugin {
   };
 
   /** refresh opened MarkdownView */
-  refresh = (leaf: WorkspaceLeaf) => {
+  refresh: leafAction = (leaf) => {
     // placeholder for now
   };
 
   /** get function to perform certain actions on all leaves */
   doAllLeaves =
-    (...actions: ((leaf: WorkspaceLeaf) => void)[]) =>
+    (...actions: leafAction[]) =>
     () => {
       this.app.workspace.iterateAllLeaves((leaf) => {
         for (const action of actions) {

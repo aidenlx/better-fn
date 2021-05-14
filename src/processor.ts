@@ -1,12 +1,12 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
-import { empty } from "./tools";
+import { empty } from "modules/tools";
 import {
   bridgeInfo,
   PopoverRenderChild,
   PopoverValue,
   toPopoverId,
-} from "./renderChild";
+} from "modules/renderChild";
 
 export interface BridgeEl extends HTMLElement {
   infoList?: bridgeInfo[];
