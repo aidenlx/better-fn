@@ -1,3 +1,5 @@
+## [0.2.1](https://github.com/alx-plugins/better-fn/compare/0.2.0...0.2.1) (2021-05-14)
+
 # [0.2.0](https://github.com/alx-plugins/better-fn/compare/0.1.1...0.2.0) (2021-05-12)
 
 
