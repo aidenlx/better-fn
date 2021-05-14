@@ -3,7 +3,7 @@
 	"name": "Better footnote",
 	"version": "0.2.0",
 	"minAppVersion": "0.9.12",
-	"description": "Better footnote for Obsidian",
+	"description": "Footnote popover for Obsidian",
 	"author": "",
 	"authorUrl": "",
 	"isDesktopOnly": false

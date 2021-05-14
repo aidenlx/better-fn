@@ -1,7 +1,7 @@
 {
   "name": "better-fn",
   "version": "0.2.0",
-  "description": "Better footnote for Obsidian",
+  "description": "Footnote popover for Obsidian",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
