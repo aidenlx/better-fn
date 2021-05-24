@@ -61,8 +61,8 @@ export default class BetterFn extends Plugin {
     // placeholder for now
   };
 
-  /** get function to perform certain actions on all leaves */
-  doAllLeaves =
+  /** get the function that perform given actions on all leaves */
+  getLoopAllLeavesFunc =
     (...actions: leafAction[]) =>
     () => {
       this.app.workspace.iterateAllLeaves((leaf) => {
@@ -72,7 +72,7 @@ export default class BetterFn extends Plugin {
       });
     };
   
-  layoutChangeCallback = this.doAllLeaves(this.modifyOnUnloadFile);
+  layoutChangeCallback = this.getLoopAllLeavesFunc(this.modifyOnUnloadFile);
 
   async onload() {
     console.log("loading BetterFn");
@@ -83,7 +83,7 @@ export default class BetterFn extends Plugin {
     this.registerEvent(
       this.app.workspace.on("layout-change", this.layoutChangeCallback)
     );
-    this.doAllLeaves(this.modifyOnUnloadFile, this.refresh)();
+    this.getLoopAllLeavesFunc(this.modifyOnUnloadFile, this.refresh)();
 
     // this.addSettingTab(new BetterFnSettingTab(this.app, this));
   }
@@ -91,7 +91,7 @@ export default class BetterFn extends Plugin {
   onunload() {
     console.log("unloading BetterFn");
 
-    this.doAllLeaves(this.revertOnUnloadFile, this.refresh)();
+    this.getLoopAllLeavesFunc(this.revertOnUnloadFile, this.refresh)();
   }
 
   // async loadSettings() {
