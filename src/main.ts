@@ -59,13 +59,8 @@ export default class BetterFn extends Plugin {
   /** get the function that perform given actions on all leaves */
   getLoopAllLeavesFunc =
     (...actions: leafAction[]) =>
-    () => {
-      this.app.workspace.iterateAllLeaves((leaf) => {
-        for (const action of actions) {
-          action(leaf);
-        }
-      });
-    };
+    () =>
+      actions.forEach((action) => this.app.workspace.iterateAllLeaves(action));
 
   layoutChangeCallback = this.getLoopAllLeavesFunc(this.modifyOnUnloadFile);
 
