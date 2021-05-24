@@ -1,58 +1,53 @@
 import { BridgeEl, PopoverHandler } from "./processor";
-import {
-  MarkdownPreviewRenderer,
-  MarkdownView,
-  Plugin,
-  TextFileView,
-  Workspace,
-  WorkspaceLeaf,
-} from "obsidian";
+import { MarkdownView, Plugin, TextFileView, View, Workspace } from "obsidian";
 import "./main.css";
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
 type leafAction = Parameters<Workspace["iterateAllLeaves"]>[0];
 
-type onUnloadFileModified = TextFileView["onUnloadFile"] & {
-  modified?: boolean;
+type MarkdownViewModified = MarkdownView & {
+  onUnloadFile: onUnloadFileModified;
 };
+
+type onUnloadFileModified = TextFileView["onUnloadFile"] & {
+  bak: TextFileView["onUnloadFile"];
+};
+
+/** check if given view's onload is intact */
+const isIntact = (view: View): view is MarkdownView =>
+  view instanceof MarkdownView &&
+  (view as MarkdownViewModified).onUnloadFile.bak === undefined;
+const isModified = (view: View): view is MarkdownViewModified =>
+  view instanceof MarkdownView &&
+  (view as MarkdownViewModified).onUnloadFile.bak !== undefined;
 export default class BetterFn extends Plugin {
   // settings: BetterFnSettings = DEFAULT_SETTINGS;
 
   PopoverHandler = PopoverHandler.bind(this);
 
-  onUnloadFileBak?: TextFileView["onUnloadFile"];
-
   /** Remove redundant element from fnInfo */
   modifyOnUnloadFile: leafAction = (leaf) => {
-    if (
-      leaf.view instanceof MarkdownView &&
-      !(leaf.view.onUnloadFile as onUnloadFileModified).modified
-    ) {
-      const view = leaf.view;
-      const src = leaf.view.onUnloadFile;
-      if (!this.onUnloadFileBak) this.onUnloadFileBak = src;
-      view.onUnloadFile = (file) => {
-        // custom code here
-        const list = (
-          view.previewMode.containerEl.querySelector(
-            ".markdown-preview-section"
-          ) as BridgeEl
-        ).infoList;
-        if (list) list.length = 0;
+    if (!isIntact(leaf.view)) return;
+    const view = leaf.view;
+    const src = leaf.view.onUnloadFile;
+    view.onUnloadFile = (file) => {
+      // custom code here
+      const list = (
+        view.previewMode.containerEl.querySelector(
+          ".markdown-preview-section"
+        ) as BridgeEl
+      ).infoList;
+      if (list) list.length = 0;
 
-        return src.call(view, file);
-      };
-      (view.onUnloadFile as onUnloadFileModified).modified = true;
-    }
+      return src.call(view, file);
+    };
+    (leaf.view as MarkdownViewModified).onUnloadFile.bak = src;
   };
 
   revertOnUnloadFile: leafAction = (leaf) => {
-    if (leaf.view instanceof MarkdownView) {
-      if (
-        (leaf.view.onUnloadFile as onUnloadFileModified).modified &&
-        this.onUnloadFileBak
-      )
-        leaf.view.onUnloadFile = this.onUnloadFileBak.bind(leaf.view);
+    if (isModified(leaf.view)) {
+      (leaf.view as MarkdownView).onUnloadFile =
+        leaf.view.onUnloadFile.bak.bind(leaf.view);
     }
   };
 
@@ -71,7 +66,7 @@ export default class BetterFn extends Plugin {
         }
       });
     };
-  
+
   layoutChangeCallback = this.getLoopAllLeavesFunc(this.modifyOnUnloadFile);
 
   async onload() {
