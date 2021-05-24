@@ -1,7 +1,3 @@
-/** Remove all child nodes of the element from the DOM. */
-export function empty(el: HTMLElement): void {
-  while (el.firstChild) el.removeChild(el.firstChild);
-}
 
 export function insertAfter(newNode: Node, referenceNode: Node): boolean {
   if (referenceNode.parentNode)

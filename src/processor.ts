@@ -1,6 +1,5 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
-import { empty } from "modules/tools";
 import {
   bridgeInfo,
   PopoverRenderChild,
@@ -60,7 +59,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     const { id: refId, innerText: srcText } = sup;
     const { sourcePath } = ctx;
-    empty(sup);
+    sup.empty();
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 

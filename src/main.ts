@@ -40,7 +40,7 @@ export default class BetterFn extends Plugin {
         ).infoList;
         if (list) list.length = 0;
 
-        return src.bind(view)(file);
+        return src.call(view, file);
       };
       (view.onUnloadFile as onUnloadFileModified).modified = true;
     }
@@ -91,7 +91,6 @@ export default class BetterFn extends Plugin {
   onunload() {
     console.log("unloading BetterFn");
 
-    MarkdownPreviewRenderer.unregisterPostProcessor(this.PopoverHandler);
     this.doAllLeaves(this.revertOnUnloadFile, this.refresh)();
   }
 
