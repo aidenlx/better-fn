@@ -1,6 +1,7 @@
 sup.footnote-ref {
   user-select: none;
   cursor: pointer;
+  color: var(--text-accent);
 }
 
 .visuallyhidden:not(:focus):not(:active) {
