@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/alx-plugins/better-fn/compare/0.2.1...0.2.2) (2021-05-25)
+
+
+### Bug Fixes
+
+* **main.css:** change footnote-ref color to default ([fe73deb](https://github.com/alx-plugins/better-fn/commit/fe73deb268ab3160a49676cc58e0a5035e3516cc))
+
 ## [0.2.1](https://github.com/alx-plugins/better-fn/compare/0.2.0...0.2.1) (2021-05-14)
 
 # [0.2.0](https://github.com/alx-plugins/better-fn/compare/0.1.1...0.2.0) (2021-05-12)
