@@ -53,7 +53,12 @@ export default class BetterFn extends Plugin {
 
   /** refresh opened MarkdownView */
   refresh: leafAction = (leaf) => {
-    // placeholder for now
+    setTimeout(() => {
+      if (leaf.view instanceof MarkdownView){
+        // @ts-ignore
+        leaf.view.previewMode.rerender(true);
+      }  
+    }, 200);
   };
 
   /** get the function that perform given actions on all leaves */
