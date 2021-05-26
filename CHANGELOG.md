@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/alx-plugins/better-fn/compare/0.2.2...0.3.0) (2021-05-26)
+
+
+### Features
+
+* **main.ts:** refresh opened previews when unload and load ([c91493f](https://github.com/alx-plugins/better-fn/commit/c91493f137470e1956c85b3d21d7d2ee97c8e8c3))
+
 ## [0.2.2](https://github.com/alx-plugins/better-fn/compare/0.2.1...0.2.2) (2021-05-25)
 
 

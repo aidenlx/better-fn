@@ -12,7 +12,7 @@ Click on footnote to show footnote as popover.
 
 ## Compatibility
 
-The required API feature is only available for Obsidian v0.9.12+.
+The required API feature is only available for Obsidian v0.12.4+.
 
 ## Installation
 
