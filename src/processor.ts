@@ -1,15 +1,31 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
 import {
-  bridgeInfo,
-  PopoverRenderChild,
-  PopoverValue,
-  toPopoverId,
+  bridgeInfo, createPopover
 } from "modules/renderChild";
 
 export interface BridgeEl extends HTMLElement {
-  /** key: fnref-1-(1-)-asjfaskdlfa */
-  infoList?: Map<string, bridgeInfo>;
+  infoList?: infoList;
+}
+
+/** key: fnref-1-(1-)-asjfaskdlfa */
+export type infoList = Map<string, bridgeInfo>;
+
+/**
+ * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
+ */
+export function findInfoKeys(id: string, from: infoList): string[] | null {
+  if (from.has(id)) return [id];
+  else {
+    const keys = [...from.keys()];
+    const match = keys.filter(
+      (key) =>
+        key.replace(/(?<=^fnref-\d+?-)\d+?-/, "") ===
+        id.replace(/^fn-/, "fnref-")
+    );
+    if (match.length) return match;
+    else return null;
+  }
 }
 
 // prettier-ignore
@@ -36,24 +52,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     return result.length !== 0;
   }
 
-  /**
-   * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
-   */
-  function findInfoIndex(id: string): string[] | null {
-    if (infoList.has(id)) return [id];
-    else {
-      const keys = [...infoList.keys()];
-      const match = keys.filter(
-        (key) =>
-          key.replace(/(?<=^fnref-\d+?-)\d+?-/, "") ===
-          id.replace(/^fn-/, "fnref-")
-      );
-      if (match.length) return match;
-      else return null;
-    }
-  }
-
-  function callbackRef(v: Element) {
+  const callbackRef = (v: Element) => {
     // <sup
     //   data-footnote-id="fnref-1-aa7e756d44d79c16"
     //   class="footnote-ref"
@@ -74,77 +73,65 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 
-    const id = toPopoverId(refId);
-
     if (infoList.has(refId)) {
       // if rendered before (only rerender changed paragraph)
       const info = infoList.get(refId) as bridgeInfo;
-      const { renderChild } = info;
+      const { popover } = info;
       info.refEl = sup;
-
-      if (renderChild && renderChild.popovers.has(id)) {
-        const popper = renderChild.popovers.get(id) as PopoverValue;
-        popper.instance.destroy();
-        renderChild.popovers.delete(id);
-        renderChild.createPopover(refId, popper.html, sup);
-      } else console.error("refEl %o found in footnotes, pop null", sup);
+      if (!popover) {
+        console.error("refEl %o found in %o, pop null", sup, infoList);
+        return;
+      }
+      const { html } = popover;
+      createPopover(infoList, html, sup);
     } else {
       // if never render (full render)
       infoList.set(refId, {
         sourcePath,
         refEl: sup,
-        renderChild: null,
+        popover: null,
       });
     }
   }
-  function callbackFn(v: Element) {
-    // <li
-    //   data-line="0"
-    //   data-footnote-id="fn-1-aa7e756d44d79c16"
-    //   id="fn-1-aa7e756d44d79c16"
-    // >
-    //   content
-    //   <a
-    //     href="#fnref-1-aa7e756d44d79c16"
-    //     class="footnote-backref footnote-link"
-    //     target="_blank"
-    //     rel="noopener"
-    //     >↩︎</a
-    //   >
-    // </li>
-    const li = v as HTMLLIElement;
-
-    const { id: fnId } = li;
-
-    const find = el.querySelector("div.popper-container");
-
-    const container: HTMLElement =
-      (find as HTMLElement) ??
-      el.appendChild(createDiv({ cls: "popper-container" }));
-
-    const child = new PopoverRenderChild(container, infoList);
-
-    const keys = findInfoIndex(fnId);
-
-    if (keys) {
-      for (const k of keys) {
-        child.createPopover(fnId, li, k);
-        (infoList.get(k) as bridgeInfo).renderChild = child;
-      }
-    } else
-      console.error(
-        "Unable to create popover: ref info not found in %o",
-        infoList
-      );
-
-    ctx.addChild(child);
-  }
 
   const refProcess = forEach("sup.footnote-ref", callbackRef);
-  if (!refProcess) {
-    const fnProcess = forEach("section.footnotes li", callbackFn);
-    if (fnProcess && !this.settings.showFnRef) el.firstElementChild?.addClass("visuallyhidden");
-    // NOTE: using "display:none" or hidden will block markdown-preview-pusher
-  }
+  if (refProcess) return;
+
+  // <li
+  //   data-line="0"
+  //   data-footnote-id="fn-1-aa7e756d44d79c16"
+  //   id="fn-1-aa7e756d44d79c16"
+  // >
+  //   content
+  //   <a
+  //     href="#fnref-1-aa7e756d44d79c16"
+  //     class="footnote-backref footnote-link"
+  //     target="_blank"
+  //     rel="noopener"
+  //     >↩︎</a
+  //   >
+  // </li>
+  if (
+    el.children.length === 1 &&
+    el.firstElementChild?.matches("section.footnotes")
+  ) {
+    const section = el.firstElementChild;
+    for (const v of section.querySelectorAll("li")) {
+      const li = v as HTMLLIElement;
+      const { id: fnId } = li;
+      const keys = findInfoKeys(fnId, infoList);
   
+      if (keys) {
+        for (const k of keys) {
+          createPopover(infoList, li, k);
+        }
+      } else
+        console.error(
+          "Unable to create popover: ref info not found in %o",
+          infoList
+        );
+    }
+    // NOTE: using "display:none" or hidden will block markdown-preview-pusher
+    if (!this.settings.showFnRef) section.addClass("visuallyhidden");
+  }
 };

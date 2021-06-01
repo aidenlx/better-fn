@@ -1,5 +1,5 @@
 import BetterFn from "main";
-import { PluginSettingTab, App, Setting } from "obsidian";
+import { PluginSettingTab, Setting } from "obsidian";
 
 export interface BetterFnSettings {
   showFnRef: boolean;

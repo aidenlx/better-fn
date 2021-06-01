@@ -2,7 +2,6 @@ import { BridgeEl, PopoverHandler } from "./processor";
 import { MarkdownView, Plugin, TextFileView, View, Workspace } from "obsidian";
 import "./main.css";
 import { BetterFnSettingTab, DEFAULT_SETTINGS } from "settings";
-// import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
 type leafAction = Parameters<Workspace["iterateAllLeaves"]>[0];
 
@@ -55,11 +54,15 @@ export default class BetterFn extends Plugin {
 
   clearInfoList: leafAction = (leaf) => {
     if (leaf.view instanceof MarkdownView){
-      (
-        leaf.view.previewMode.containerEl.querySelector(
-          ".markdown-preview-section"
-        ) as BridgeEl
-      ).infoList = undefined;
+      const bridgeEl = leaf.view.previewMode.containerEl.querySelector(
+        ".markdown-preview-section"
+      ) as BridgeEl;
+      if (bridgeEl.infoList) {
+        for (const { popover } of bridgeEl.infoList.values()) {
+          popover?.tippy.destroy();
+        }
+        bridgeEl.infoList = undefined;
+      }
     }
   }
 

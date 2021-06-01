@@ -1,16 +1,14 @@
-import { MarkdownRenderChild } from "obsidian";
-import tippy, { Instance, Props, roundArrow } from "tippy.js";
+import tippy, { Instance, Props } from "tippy.js";
 import { unwarp } from "./tools";
 import "tippy.js/dist/tippy.css";
-import "tippy.js/themes/light-border.css";
-import "tippy.js/dist/svg-arrow.css";
+import "./theme.css";
 import "tippy.js/animations/shift-toward-subtle.css";
-import { BridgeEl } from "processor";
+import { infoList } from "processor";
 
 tippy.setDefaultProps({
   interactive: true,
-  theme: "light-border",
-  arrow: roundArrow,
+  arrow: true,
+  theme: "obsidian",
   placement: "bottom",
   delay: [100, 0],
   trigger: "mouseenter click",
@@ -23,141 +21,138 @@ tippy.setDefaultProps({
 export type bridgeInfo = {
   sourcePath: string;
   refEl: HTMLElement;
-  renderChild: PopoverRenderChild | null;
+  popover: {
+    tippy: Instance<Props>;
+    html: string;
+  } | null;
 };
 
-        
 type mutationParam = {
   callback: MutationCallback;
   option: MutationObserverInit;
-}
+};
+/**
+ * Create new Popper instance for footnote popover
+ * @param contentEl the element whose children will be used as popover content
+ * @param infoIndex index used to fetch reference element from infoList
+ * @returns Popper.Instance
+ */
+export function createPopover(
+  infoList: infoList,
+  contentEl: HTMLElement,
+  infoKey: string
+): void;
+export function createPopover(
+  infoList: infoList,
+  html: string,
+  infoKey: string
+): void;
+export function createPopover(
+  infoList: infoList,
+  contentEl: HTMLElement,
+  refEl: HTMLElement
+): void;
+export function createPopover(
+  infoList: infoList,
+  html: string,
+  refEl: HTMLElement
+): void;
+export function createPopover(
+  infoList: infoList,
+  elOrHtml: HTMLElement | string,
+  keyOrEl: string | HTMLElement
+): void {
+  let html: string;
+  const srcEl = typeof elOrHtml !== "string" ? elOrHtml : null;
 
-export type PopoverValue = { instance: Instance<Props>; html: string };
+  if (srcEl) {
+    // unwarp <p>
+    const warpped = srcEl.querySelector("p");
+    if (warpped) unwarp(warpped);
 
-export class PopoverRenderChild extends MarkdownRenderChild {
-  popovers: Map<
-    string, // id: pp-...
-    PopoverValue
-  >;
-  infoList: Exclude<BridgeEl["infoList"], undefined>;
+    html = srcEl.innerHTML;
+  } else html = elOrHtml as string;
 
-  unload() {
-    for (const popper of this.popovers.values()) {
-      popper.instance.destroy();
-    }
-    this.popovers.clear();
+  if (typeof keyOrEl === "string" && !infoList.has(keyOrEl)) {
+    console.error("no info for key %s in %o", keyOrEl, infoList);
+    return;
   }
 
-  constructor(containerEl: HTMLElement, info: PopoverRenderChild["infoList"]) {
-    super(containerEl);
-    this.infoList = info;
-    this.popovers = new Map();
-  }
+  const refEl =
+    typeof keyOrEl === "string"
+      ? (infoList.get(keyOrEl) as bridgeInfo).refEl
+      : keyOrEl;
+  const key = typeof keyOrEl === "string" ? keyOrEl : keyOrEl.id;
 
-  /**
-   * Create new Popper instance for footnote popover
-   * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
-   * @param srcEl the element whose children will be used as popover content
-   * @param infoIndex index used to fetch reference element from infoList
-   * @returns Popper.Instance
-   */
-  createPopover(srcId: string, srcEl: HTMLElement, infoKey: string): void;
-  createPopover(srcId: string, html: string, infoKey: string): void;
-  createPopover(srcId: string, srcEl: HTMLElement, refEl: HTMLElement): void;
-  createPopover(srcId: string, html: string, refEl: HTMLElement): void;
-  createPopover(
-    srcId: string,
-    srcElOrCode: HTMLElement | string,
-    keyOrEl: string | HTMLElement
-  ): void {
-    const id = toPopoverId(srcId);
+  const instance = tippy(refEl, {
+    content: html,
+  });
 
-    let html: string;
-    const srcEl = typeof srcElOrCode !== "string" ? srcElOrCode : null;
+  // Monitor internal embed loadings
+  if (typeof elOrHtml !== "string") {
+    const srcEl = elOrHtml;
+    let allInternalEmbeds;
+    if ((allInternalEmbeds = srcEl.querySelectorAll("span.internal-embed"))) {
+      const markdownEmbed: mutationParam = {
+        // observer should keep connected to track updates in embeded content
+        callback: () => instance.setContent(srcEl.innerHTML),
+        // If the element being observed is removed from the DOM,
+        // and then subsequently released by the browser's garbage collection mechanism,
+        // the MutationObserver is likewise deleted.
+        option: {
+          childList: true,
+          subtree: true,
+        },
+      };
 
-    if (srcEl) {
-      // unwarp <p>
-      const warpped = srcEl.querySelector("p");
-      if (warpped) unwarp(warpped);
+      const internalEmbed: mutationParam = {
+        callback: (list, obs) => {
+          for (const mutation of list) {
+            const span = mutation.target as HTMLSpanElement;
 
-      html = srcEl.innerHTML;
-    } else html = srcElOrCode as string;
-
-    const refEl =
-      typeof keyOrEl === "string"
-        ? (this.infoList.get(keyOrEl) as bridgeInfo).refEl
-        : keyOrEl;
-
-    const instance = tippy(refEl, {
-      content: html,
-    });
-
-    // Monitor internal embed loadings
-    if (typeof srcElOrCode !== "string") {
-      const srcEl = srcElOrCode;
-      let allInternalEmbeds;
-      if ((allInternalEmbeds = srcEl.querySelectorAll("span.internal-embed"))) {
-        const markdownEmbed: mutationParam = {
-          // observer should keep connected to track updates in embeded content
-          callback: () => instance.setContent(srcEl.innerHTML),
-          // If the element being observed is removed from the DOM,
-          // and then subsequently released by the browser's garbage collection mechanism,
-          // the MutationObserver is likewise deleted.
-          option: {
-            childList: true,
-            subtree: true,
-          },
-        };
-
-        const internalEmbed: mutationParam = {
-          callback: (list, obs) => {
-            for (const mutation of list) {
-              const span = mutation.target as HTMLSpanElement;
-
-              if (span.hasClass("is-loaded")) {
-                if (span.firstElementChild?.matches("div.markdown-embed")) {
-                  const mdObs = new MutationObserver(markdownEmbed.callback);
-                  mdObs.observe(span.firstElementChild, markdownEmbed.option);
-                } else instance.setContent(srcEl.innerHTML);
-                obs.disconnect();
-              }
+            if (span.hasClass("is-loaded")) {
+              if (span.firstElementChild?.matches("div.markdown-embed")) {
+                const mdObs = new MutationObserver(markdownEmbed.callback);
+                mdObs.observe(span.firstElementChild, markdownEmbed.option);
+              } else instance.setContent(srcEl.innerHTML);
+              obs.disconnect();
             }
-          },
-          option: { attributeFilter: ["class"] },
-        };
+          }
+        },
+        option: { attributeFilter: ["class"] },
+      };
 
-        for (const span of allInternalEmbeds) {
-          const ieObs = new MutationObserver(internalEmbed.callback);
-          ieObs.observe(span, internalEmbed.option);
-        }
-      }
-      let allMathEmbeds;
-      if ((allMathEmbeds = srcEl.querySelectorAll("span.math"))) {
-        const mathEmbed: mutationParam = {
-          callback: (list, obs) => {
-            for (const mutation of list) {
-              const span = mutation.target as HTMLSpanElement;
-              if (span.hasClass("is-loaded")) {
-                instance.setContent(srcEl.innerHTML);
-                obs.disconnect();
-              }
-            }
-          },
-          option: { attributeFilter: ["class"] },
-        };
-
-        for (const span of allMathEmbeds) {
-          const mathObs = new MutationObserver(mathEmbed.callback);
-          mathObs.observe(span, mathEmbed.option);
-        }
+      for (const span of allInternalEmbeds) {
+        const ieObs = new MutationObserver(internalEmbed.callback);
+        ieObs.observe(span, internalEmbed.option);
       }
     }
+    let allMathEmbeds;
+    if ((allMathEmbeds = srcEl.querySelectorAll("span.math"))) {
+      const mathEmbed: mutationParam = {
+        callback: (list, obs) => {
+          for (const mutation of list) {
+            const span = mutation.target as HTMLSpanElement;
+            if (span.hasClass("is-loaded")) {
+              instance.setContent(srcEl.innerHTML);
+              obs.disconnect();
+            }
+          }
+        },
+        option: { attributeFilter: ["class"] },
+      };
 
-    const out = { instance, html };
-    this.popovers.set(id, out);
+      for (const span of allMathEmbeds) {
+        const mathObs = new MutationObserver(mathEmbed.callback);
+        mathObs.observe(span, mathEmbed.option);
+      }
+    }
   }
-}
 
-export function toPopoverId(srcId: string) {
-  return srcId.replace(/^(?:fn|fnref)-/, "pop-");
+  const info = infoList.get(key) as bridgeInfo;
+  if (info.popover) info.popover.tippy.destroy();
+  info.popover = {
+    tippy: instance,
+    html: html,
+  };
 }

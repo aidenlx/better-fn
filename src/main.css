@@ -31,3 +31,11 @@ sup.footnote-ref {
 .tippy-content a.footnote-backref {
   display: none;
 }
+
+.markdown-preview-view .tippy-box[data-theme~=light-border] {
+  color: var(--text-normal);
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-primary-alt);
+  box-shadow: 0 2px 8px var(--background-modifier-box-shadow);
+  z-index: var(--layer-popover);
+}
