@@ -45,6 +45,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     for (const popper of this.popovers.values()) {
       popper.instance.destroy();
     }
+    this.popovers.clear();
   }
 
   constructor(containerEl: HTMLElement, info: bridgeInfo[]) {
@@ -61,8 +62,8 @@ export class PopoverRenderChild extends MarkdownRenderChild {
    * @returns Popper.Instance
    */
   createPopover(srcId: string, srcEl: HTMLElement, infoIndex: number): void;
-  createPopover(srcId: string, srcEl: HTMLElement, refEl: HTMLElement): void;
   createPopover(srcId: string, html: string, infoIndex: number): void;
+  createPopover(srcId: string, srcEl: HTMLElement, refEl: HTMLElement): void;
   createPopover(srcId: string, html: string, refEl: HTMLElement): void;
   createPopover(
     srcId: string,

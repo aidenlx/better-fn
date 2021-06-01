@@ -33,6 +33,12 @@ export default class BetterFn extends Plugin {
     if (!isIntact(leaf.view)) return;
     const view = leaf.view;
     const src = leaf.view.onUnloadFile;
+    const list = (
+      view.previewMode.containerEl.querySelector(
+        ".markdown-preview-section"
+      ) as BridgeEl
+    ).infoList;
+    if (list) list.length = 0;
     view.onUnloadFile = (file) => {
       // custom code here
       const list = (
@@ -41,7 +47,6 @@ export default class BetterFn extends Plugin {
         ) as BridgeEl
       ).infoList;
       if (list) list.length = 0;
-
       return src.call(view, file);
     };
     (leaf.view as MarkdownViewModified).onUnloadFile.bak = src;
