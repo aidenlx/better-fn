@@ -33,12 +33,6 @@ export default class BetterFn extends Plugin {
     if (!isIntact(leaf.view)) return;
     const view = leaf.view;
     const src = leaf.view.onUnloadFile;
-    const list = (
-      view.previewMode.containerEl.querySelector(
-        ".markdown-preview-section"
-      ) as BridgeEl
-    ).infoList;
-    if (list) list.length = 0;
     view.onUnloadFile = (file) => {
       // custom code here
       const list = (
@@ -46,7 +40,7 @@ export default class BetterFn extends Plugin {
           ".markdown-preview-section"
         ) as BridgeEl
       ).infoList;
-      if (list) list.length = 0;
+      if (list) list.clear();
       return src.call(view, file);
     };
     (leaf.view as MarkdownViewModified).onUnloadFile.bak = src;
@@ -58,6 +52,16 @@ export default class BetterFn extends Plugin {
         leaf.view.onUnloadFile.bak.bind(leaf.view);
     }
   };
+
+  clearInfoList: leafAction = (leaf) => {
+    if (leaf.view instanceof MarkdownView){
+      (
+        leaf.view.previewMode.containerEl.querySelector(
+          ".markdown-preview-section"
+        ) as BridgeEl
+      ).infoList = undefined;
+    }
+  }
 
   /** refresh opened MarkdownView */
   refresh: leafAction = (leaf) => {
@@ -94,7 +98,11 @@ export default class BetterFn extends Plugin {
   onunload() {
     console.log("unloading BetterFn");
 
-    this.getLoopAllLeavesFunc(this.revertOnUnloadFile, this.refresh)();
+    this.getLoopAllLeavesFunc(
+      this.revertOnUnloadFile,
+      this.clearInfoList,
+      this.refresh
+    )();
   }
 
   async loadSettings() {

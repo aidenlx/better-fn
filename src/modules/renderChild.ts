@@ -5,6 +5,7 @@ import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
 import "tippy.js/dist/svg-arrow.css";
 import "tippy.js/animations/shift-toward-subtle.css";
+import { BridgeEl } from "processor";
 
 tippy.setDefaultProps({
   interactive: true,
@@ -20,7 +21,6 @@ tippy.setDefaultProps({
 });
 
 export type bridgeInfo = {
-  refId: string;
   sourcePath: string;
   refEl: HTMLElement;
   renderChild: PopoverRenderChild | null;
@@ -39,7 +39,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     string, // id: pp-...
     PopoverValue
   >;
-  infoList: bridgeInfo[];
+  infoList: Exclude<BridgeEl["infoList"], undefined>;
 
   unload() {
     for (const popper of this.popovers.values()) {
@@ -48,7 +48,7 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     this.popovers.clear();
   }
 
-  constructor(containerEl: HTMLElement, info: bridgeInfo[]) {
+  constructor(containerEl: HTMLElement, info: PopoverRenderChild["infoList"]) {
     super(containerEl);
     this.infoList = info;
     this.popovers = new Map();
@@ -61,14 +61,14 @@ export class PopoverRenderChild extends MarkdownRenderChild {
    * @param infoIndex index used to fetch reference element from infoList
    * @returns Popper.Instance
    */
-  createPopover(srcId: string, srcEl: HTMLElement, infoIndex: number): void;
-  createPopover(srcId: string, html: string, infoIndex: number): void;
+  createPopover(srcId: string, srcEl: HTMLElement, infoKey: string): void;
+  createPopover(srcId: string, html: string, infoKey: string): void;
   createPopover(srcId: string, srcEl: HTMLElement, refEl: HTMLElement): void;
   createPopover(srcId: string, html: string, refEl: HTMLElement): void;
   createPopover(
     srcId: string,
     srcElOrCode: HTMLElement | string,
-    indexOrEl: number | HTMLElement
+    keyOrEl: string | HTMLElement
   ): void {
     const id = toPopoverId(srcId);
 
@@ -84,9 +84,9 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     } else html = srcElOrCode as string;
 
     const refEl =
-      typeof indexOrEl === "number"
-        ? this.infoList[indexOrEl].refEl
-        : indexOrEl;
+      typeof keyOrEl === "string"
+        ? (this.infoList.get(keyOrEl) as bridgeInfo).refEl
+        : keyOrEl;
 
     const instance = tippy(refEl, {
       content: html,
@@ -97,11 +97,10 @@ export class PopoverRenderChild extends MarkdownRenderChild {
       const srcEl = srcElOrCode;
       let all;
       if ((all = srcEl.querySelectorAll("span.internal-embed"))) {
-
         const markdownEmbed: mutationParam = {
           // observer should keep connected to track updates in embeded content
           callback: () => instance.setContent(srcEl.innerHTML),
-          // If the element being observed is removed from the DOM, 
+          // If the element being observed is removed from the DOM,
           // and then subsequently released by the browser's garbage collection mechanism,
           // the MutationObserver is likewise deleted.
           option: {
@@ -129,9 +128,8 @@ export class PopoverRenderChild extends MarkdownRenderChild {
 
         for (const span of all) {
           const ieObs = new MutationObserver(internalEmbed.callback);
-          ieObs.observe(span,internalEmbed.option);
+          ieObs.observe(span, internalEmbed.option);
         }
-
       }
     }
 

@@ -8,7 +8,8 @@ import {
 } from "modules/renderChild";
 
 export interface BridgeEl extends HTMLElement {
-  infoList?: bridgeInfo[];
+  /** key: fnref-1-(1-)-asjfaskdlfa */
+  infoList?: Map<string, bridgeInfo>;
 }
 
 // prettier-ignore
@@ -17,7 +18,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 ) {
   // @ts-ignore
   const bridge = ctx.containerEl as BridgeEl;
-  if (!bridge.infoList) bridge.infoList = [];
+  if (!bridge.infoList) bridge.infoList = new Map();
 
   const { infoList } = bridge;
 
@@ -38,8 +39,18 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   /**
    * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
    */
-  function findInfoIndex(id: string): number {
-    return infoList.findIndex((v) => v.refId === id.replace(/^fn-/, "fnref-"));
+  function findInfoIndex(id: string): string[] | null {
+    if (infoList.has(id)) return [id];
+    else {
+      const keys = [...infoList.keys()];
+      const match = keys.filter(
+        (key) =>
+          key.replace(/(?<=^fnref-\d+?-)\d+?-/, "") ===
+          id.replace(/^fn-/, "fnref-")
+      );
+      if (match.length) return match;
+      else return null;
+    }
   }
 
   function callbackRef(v: Element) {
@@ -63,11 +74,11 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 
-    const index = findInfoIndex(refId);
     const id = toPopoverId(refId);
 
-    if (index !== -1) {
-      const info = infoList[index];
+    if (infoList.has(refId)) {
+      // if rendered before (only rerender changed paragraph)
+      const info = infoList.get(refId) as bridgeInfo;
       const { renderChild } = info;
       info.refEl = sup;
 
@@ -78,8 +89,8 @@ export const PopoverHandler: MarkdownPostProcessor = function (
         renderChild.createPopover(refId, popper.html, sup);
       } else console.error("refEl %o found in footnotes, pop null", sup);
     } else {
-      infoList.push({
-        refId,
+      // if never render (full render)
+      infoList.set(refId, {
         sourcePath,
         refEl: sup,
         renderChild: null,
@@ -113,11 +124,13 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     const child = new PopoverRenderChild(container, infoList);
 
-    const index = findInfoIndex(fnId);
+    const keys = findInfoIndex(fnId);
 
-    if (index !== -1) {
-      child.createPopover(fnId, li, index);
-      infoList[index].renderChild = child;
+    if (keys) {
+      for (const k of keys) {
+        child.createPopover(fnId, li, k);
+        (infoList.get(k) as bridgeInfo).renderChild = child;
+      }
     } else
       console.error(
         "Unable to create popover: ref info not found in %o",
