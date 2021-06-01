@@ -1,4 +1,3 @@
-
 export function insertAfter(newNode: Node, referenceNode: Node): boolean {
   if (referenceNode.parentNode)
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);

@@ -1,8 +1,6 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
-import {
-  bridgeInfo, createPopover
-} from "modules/renderChild";
+import { bridgeInfo, createPopover } from "modules/renderChild";
 
 export interface BridgeEl extends HTMLElement {
   infoList?: infoList;
@@ -21,7 +19,7 @@ export function findInfoKeys(id: string, from: infoList): string[] | null {
     const match = keys.filter(
       (key) =>
         key.replace(/(?<=^fnref-\d+?-)\d+?-/, "") ===
-        id.replace(/^fn-/, "fnref-")
+        id.replace(/^fn-/, "fnref-"),
     );
     if (match.length) return match;
     else return null;

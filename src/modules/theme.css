@@ -22,8 +22,7 @@
   > .tippy-arrow:before {
   border-top-color: var(--background-primary);
 }
-.tippy-box[data-theme~="obsidian"][data-placement^="top"]
-  > .tippy-arrow:after {
+.tippy-box[data-theme~="obsidian"][data-placement^="top"] > .tippy-arrow:after {
   border-top-color: var(--background-modifier-border);
   border-width: 7px 7px 0;
   top: 17px;

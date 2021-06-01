@@ -6,7 +6,7 @@ export interface BetterFnSettings {
 }
 
 export const DEFAULT_SETTINGS: BetterFnSettings = {
-  showFnRef: false
+  showFnRef: false,
 };
 
 export class BetterFnSettingTab extends PluginSettingTab {
@@ -20,15 +20,15 @@ export class BetterFnSettingTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
     new Setting(this.containerEl)
-    .setName("Show reference")
-    .setDesc("Show reference section at the buttom of document")
-    .addToggle((toggle) => {
-      toggle.setValue(this.plugin.settings.showFnRef);
-      toggle.onChange(async (value) => {
-        this.plugin.settings.showFnRef = value;
-        this.plugin.getLoopAllLeavesFunc(this.plugin.refresh)();
-        await this.plugin.saveSettings();
+      .setName("Show reference")
+      .setDesc("Show reference section at the buttom of document")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.showFnRef);
+        toggle.onChange(async (value) => {
+          this.plugin.settings.showFnRef = value;
+          this.plugin.getLoopAllLeavesFunc(this.plugin.refresh)();
+          await this.plugin.saveSettings();
+        });
       });
-    });
   }
 }

@@ -36,7 +36,7 @@ export default class BetterFn extends Plugin {
       // custom code here
       const list = (
         view.previewMode.containerEl.querySelector(
-          ".markdown-preview-section"
+          ".markdown-preview-section",
         ) as BridgeEl
       ).infoList;
       if (list) list.clear();
@@ -53,9 +53,9 @@ export default class BetterFn extends Plugin {
   };
 
   clearInfoList: leafAction = (leaf) => {
-    if (leaf.view instanceof MarkdownView){
+    if (leaf.view instanceof MarkdownView) {
       const bridgeEl = leaf.view.previewMode.containerEl.querySelector(
-        ".markdown-preview-section"
+        ".markdown-preview-section",
       ) as BridgeEl;
       if (bridgeEl.infoList) {
         for (const { popover } of bridgeEl.infoList.values()) {
@@ -64,15 +64,15 @@ export default class BetterFn extends Plugin {
         bridgeEl.infoList = undefined;
       }
     }
-  }
+  };
 
   /** refresh opened MarkdownView */
   refresh: leafAction = (leaf) => {
     setTimeout(() => {
-      if (leaf.view instanceof MarkdownView){
+      if (leaf.view instanceof MarkdownView) {
         // @ts-ignore
         leaf.view.previewMode.rerender(true);
-      }  
+      }
     }, 200);
   };
 
@@ -91,7 +91,7 @@ export default class BetterFn extends Plugin {
 
     this.registerMarkdownPostProcessor(this.PopoverHandler);
     this.registerEvent(
-      this.app.workspace.on("layout-change", this.layoutChangeCallback)
+      this.app.workspace.on("layout-change", this.layoutChangeCallback),
     );
     this.getLoopAllLeavesFunc(this.modifyOnUnloadFile, this.refresh)();
 
@@ -104,15 +104,15 @@ export default class BetterFn extends Plugin {
     this.getLoopAllLeavesFunc(
       this.revertOnUnloadFile,
       this.clearInfoList,
-      this.refresh
+      this.refresh,
     )();
   }
 
   async loadSettings() {
-  	this.settings = {...this.settings,...(await this.loadData())};
+    this.settings = { ...this.settings, ...(await this.loadData()) };
   }
 
   async saveSettings() {
-  	await this.saveData(this.settings);
+    await this.saveData(this.settings);
   }
 }

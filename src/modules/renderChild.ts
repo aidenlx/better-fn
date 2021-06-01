@@ -40,27 +40,27 @@ type mutationParam = {
 export function createPopover(
   infoList: infoList,
   contentEl: HTMLElement,
-  infoKey: string
+  infoKey: string,
 ): void;
 export function createPopover(
   infoList: infoList,
   html: string,
-  infoKey: string
+  infoKey: string,
 ): void;
 export function createPopover(
   infoList: infoList,
   contentEl: HTMLElement,
-  refEl: HTMLElement
+  refEl: HTMLElement,
 ): void;
 export function createPopover(
   infoList: infoList,
   html: string,
-  refEl: HTMLElement
+  refEl: HTMLElement,
 ): void;
 export function createPopover(
   infoList: infoList,
   elOrHtml: HTMLElement | string,
-  keyOrEl: string | HTMLElement
+  keyOrEl: string | HTMLElement,
 ): void {
   let html: string;
   const srcEl = typeof elOrHtml !== "string" ? elOrHtml : null;
