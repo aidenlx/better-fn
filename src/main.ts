@@ -34,12 +34,14 @@ export default class BetterFn extends Plugin {
     const src = leaf.view.onUnloadFile;
     view.onUnloadFile = (file) => {
       // custom code here
-      const list = (
-        view.previewMode.containerEl.querySelector(
-          ".markdown-preview-section",
-        ) as BridgeEl
-      ).infoList;
-      if (list) list.clear();
+      const bridgeEl = view.previewMode.containerEl.querySelector(
+        ".markdown-preview-section",
+      ) as BridgeEl;
+      const { infoList } = bridgeEl;
+      if (infoList) {
+        infoList.forEach((info) => info.popover?.tippy.destroy());
+        infoList.clear();
+      }
       return src.call(view, file);
     };
     (leaf.view as MarkdownViewModified).onUnloadFile.bak = src;
@@ -57,10 +59,9 @@ export default class BetterFn extends Plugin {
       const bridgeEl = leaf.view.previewMode.containerEl.querySelector(
         ".markdown-preview-section",
       ) as BridgeEl;
-      if (bridgeEl.infoList) {
-        for (const { popover } of bridgeEl.infoList.values()) {
-          popover?.tippy.destroy();
-        }
+      const { infoList } = bridgeEl;
+      if (infoList) {
+        infoList.forEach((info) => info.popover?.tippy.destroy());
         bridgeEl.infoList = undefined;
       }
     }
