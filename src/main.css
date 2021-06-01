@@ -39,3 +39,7 @@ sup.footnote-ref {
   box-shadow: 0 2px 8px var(--background-modifier-box-shadow);
   z-index: var(--layer-popover);
 }
+
+span > [data-tippy-root] {
+  display: inline;
+}

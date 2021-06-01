@@ -63,14 +63,14 @@ export function createPopover(
   keyOrEl: string | HTMLElement,
 ): void {
   let html: string;
-  const srcEl = typeof elOrHtml !== "string" ? elOrHtml : null;
+  const contentEl = typeof elOrHtml !== "string" ? elOrHtml : null;
 
-  if (srcEl) {
+  if (contentEl) {
     // unwarp <p>
-    const warpped = srcEl.querySelector("p");
+    const warpped = contentEl.querySelector("p");
     if (warpped) unwarp(warpped);
 
-    html = srcEl.innerHTML;
+    html = contentEl.innerHTML;
   } else html = elOrHtml as string;
 
   if (typeof keyOrEl === "string" && !infoList.has(keyOrEl)) {
@@ -84,8 +84,14 @@ export function createPopover(
       : keyOrEl;
   const key = typeof keyOrEl === "string" ? keyOrEl : keyOrEl.id;
 
+  if (!refEl.parentElement) throw new Error("no parent for refEl");
+  const warpper = createSpan();
+  refEl.parentElement.insertBefore(warpper, refEl);
+  warpper.appendChild(refEl);
+
   const instance = tippy(refEl, {
     content: html,
+    appendTo: warpper,
   });
 
   // Monitor internal embed loadings
