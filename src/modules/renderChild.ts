@@ -75,10 +75,6 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     const srcEl = typeof srcElOrCode !== "string" ? srcElOrCode : null;
 
     if (srcEl) {
-      // remove footnote-backref from srcEl
-      for (const match of srcEl.querySelectorAll("a.footnote-backref")) {
-        if (match.parentElement) match.parentElement.removeChild(match);
-      }
       // unwarp <p>
       const warpped = srcEl.querySelector("p");
       if (warpped) unwarp(warpped);

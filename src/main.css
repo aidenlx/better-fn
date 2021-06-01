@@ -27,3 +27,7 @@ sup.footnote-ref {
   max-height: 20em;
   overflow-x: auto;
 }
+
+.tippy-content a.footnote-backref {
+  display: none;
+}

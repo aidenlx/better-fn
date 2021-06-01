@@ -1,6 +1,7 @@
 import { BridgeEl, PopoverHandler } from "./processor";
 import { MarkdownView, Plugin, TextFileView, View, Workspace } from "obsidian";
 import "./main.css";
+import { BetterFnSettingTab, DEFAULT_SETTINGS } from "settings";
 // import { BetterFnSettings, DEFAULT_SETTINGS, BetterFnSettingTab } from 'settings';
 
 type leafAction = Parameters<Workspace["iterateAllLeaves"]>[0];
@@ -24,6 +25,8 @@ export default class BetterFn extends Plugin {
   // settings: BetterFnSettings = DEFAULT_SETTINGS;
 
   PopoverHandler = PopoverHandler.bind(this);
+
+  settings = DEFAULT_SETTINGS;
 
   /** Remove redundant element from fnInfo */
   modifyOnUnloadFile: leafAction = (leaf) => {
@@ -72,7 +75,7 @@ export default class BetterFn extends Plugin {
   async onload() {
     console.log("loading BetterFn");
 
-    // await this.loadSettings();
+    await this.loadSettings();
 
     this.registerMarkdownPostProcessor(this.PopoverHandler);
     this.registerEvent(
@@ -80,7 +83,7 @@ export default class BetterFn extends Plugin {
     );
     this.getLoopAllLeavesFunc(this.modifyOnUnloadFile, this.refresh)();
 
-    // this.addSettingTab(new BetterFnSettingTab(this.app, this));
+    this.addSettingTab(new BetterFnSettingTab(this));
   }
 
   onunload() {
@@ -89,11 +92,11 @@ export default class BetterFn extends Plugin {
     this.getLoopAllLeavesFunc(this.revertOnUnloadFile, this.refresh)();
   }
 
-  // async loadSettings() {
-  // 	this.settings = {...this.settings,...(await this.loadData())};
-  // }
+  async loadSettings() {
+  	this.settings = {...this.settings,...(await this.loadData())};
+  }
 
-  // async saveSettings() {
-  // 	await this.saveData(this.settings);
-  // }
+  async saveSettings() {
+  	await this.saveData(this.settings);
+  }
 }
