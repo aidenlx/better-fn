@@ -95,8 +95,8 @@ export class PopoverRenderChild extends MarkdownRenderChild {
     // Monitor internal embed loadings
     if (typeof srcElOrCode !== "string") {
       const srcEl = srcElOrCode;
-      let all;
-      if ((all = srcEl.querySelectorAll("span.internal-embed"))) {
+      let allInternalEmbeds;
+      if ((allInternalEmbeds = srcEl.querySelectorAll("span.internal-embed"))) {
         const markdownEmbed: mutationParam = {
           // observer should keep connected to track updates in embeded content
           callback: () => instance.setContent(srcEl.innerHTML),
@@ -126,9 +126,29 @@ export class PopoverRenderChild extends MarkdownRenderChild {
           option: { attributeFilter: ["class"] },
         };
 
-        for (const span of all) {
+        for (const span of allInternalEmbeds) {
           const ieObs = new MutationObserver(internalEmbed.callback);
           ieObs.observe(span, internalEmbed.option);
+        }
+      }
+      let allMathEmbeds;
+      if ((allMathEmbeds = srcEl.querySelectorAll("span.math"))) {
+        const mathEmbed: mutationParam = {
+          callback: (list, obs) => {
+            for (const mutation of list) {
+              const span = mutation.target as HTMLSpanElement;
+              if (span.hasClass("is-loaded")) {
+                instance.setContent(srcEl.innerHTML);
+                obs.disconnect();
+              }
+            }
+          },
+          option: { attributeFilter: ["class"] },
+        };
+
+        for (const span of allMathEmbeds) {
+          const mathObs = new MutationObserver(mathEmbed.callback);
+          mathObs.observe(span, mathEmbed.option);
         }
       }
     }
