@@ -6,9 +6,10 @@ Turning footnote into popover
 
 ## How to use
 
-Hover on footnote to quick preview footnote.
-
-Click on footnote to show footnote as popover.
+- Hover on footnote to quick preview.
+- Click on footnote to show persistent popover.
+- Double click on footnote to jump to reference at the buttom.
+  - Only work if `Show reference` is enabled in setting
 
 ## Compatibility
 

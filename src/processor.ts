@@ -72,6 +72,9 @@ export const PopoverHandler: MarkdownPostProcessor = function (
 
     const { id: refId, innerText: srcText } = sup;
     const { sourcePath } = ctx;
+    sup.dataset.footnoteLink = (sup.firstElementChild as HTMLAnchorElement).href
+      .split("#")
+      .pop();
     sup.empty();
     sup.innerText = srcText;
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
@@ -86,7 +89,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
         return;
       }
       const { html } = popover;
-      createPopover(infoList, html, sup);
+      createPopover(infoList, html, sup, this.settings.showFnRef);
       shouldCreateSingleton = true;
     } else {
       // if never render (full render)
@@ -127,7 +130,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   
       if (keys) {
         for (const k of keys) {
-          createPopover(infoList, li, k);
+          createPopover(infoList, li, k, this.settings.showFnRef);
         }
       } else
         console.error(

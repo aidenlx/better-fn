@@ -47,26 +47,31 @@ export function createPopover(
   infoList: infoList,
   contentEl: HTMLElement,
   infoKey: string,
+  showButtom?: boolean,
 ): popover;
 export function createPopover(
   infoList: infoList,
   html: string,
   infoKey: string,
+  showButtom?: boolean,
 ): popover;
 export function createPopover(
   infoList: infoList,
   contentEl: HTMLElement,
   refEl: HTMLElement,
+  showButtom?: boolean,
 ): popover;
 export function createPopover(
   infoList: infoList,
   html: string,
   refEl: HTMLElement,
+  showButtom?: boolean,
 ): popover;
 export function createPopover(
   infoList: infoList,
   elOrHtml: HTMLElement | string,
   keyOrEl: string | HTMLElement,
+  showButtom = false,
 ): popover {
   let html: string;
   const contentEl = typeof elOrHtml !== "string" ? elOrHtml : null;
@@ -103,6 +108,20 @@ export function createPopover(
         inst.popper.style.zIndex = (defaultValue - 1).toString();
       }
     },
+  });
+
+  refEl.addEventListener("dblclick", (evt) => {
+    const id = refEl.dataset.footnoteLink;
+    if (showButtom && id) {
+      const li = document.getElementById(id);
+      if (!li) {
+        console.error("element not found: %s", id);
+        return;
+      }
+      li.scrollIntoView();
+      li.addClass("is-flashing");
+      setTimeout(() => li.removeClass("is-flashing"), 1e3);
+    }
   });
 
   // Monitor internal embed loadings
