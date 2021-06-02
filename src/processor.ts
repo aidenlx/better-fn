@@ -1,9 +1,11 @@
 import BetterFn from "main";
 import { MarkdownPostProcessor } from "obsidian";
 import { bridgeInfo, createPopover } from "modules/renderChild";
+import { createSingleton } from "tippy.js";
 
 export interface BridgeEl extends HTMLElement {
   infoList?: infoList;
+  singleton?: ReturnType<typeof createSingleton> | null;
 }
 
 /** key: fnref-1-(1-)-asjfaskdlfa */
@@ -33,8 +35,9 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   // @ts-ignore
   const bridge = ctx.containerEl as BridgeEl;
   if (!bridge.infoList) bridge.infoList = new Map();
+  if (!bridge.singleton) bridge.singleton = null;
 
-  const { infoList } = bridge;
+  const { infoList, singleton } = bridge;
 
   type callback = Parameters<NodeListOf<Element>["forEach"]>[0];
 
@@ -49,6 +52,8 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     if (result.length !== 0) result.forEach(callback);
     return result.length !== 0;
   }
+
+  let shouldCreateSingleton = false;
 
   const callbackRef = (v: Element) => {
     // <sup
@@ -82,6 +87,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
       }
       const { html } = popover;
       createPopover(infoList, html, sup);
+      shouldCreateSingleton = true;
     } else {
       // if never render (full render)
       infoList.set(refId, {
@@ -93,7 +99,6 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   }
 
   const refProcess = forEach("sup.footnote-ref", callbackRef);
-  if (refProcess) return;
 
   // <li
   //   data-line="0"
@@ -110,6 +115,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
   //   >
   // </li>
   if (
+    !refProcess &&
     el.children.length === 1 &&
     el.firstElementChild?.matches("section.footnotes")
   ) {
@@ -129,7 +135,22 @@ export const PopoverHandler: MarkdownPostProcessor = function (
           infoList
         );
     }
+    shouldCreateSingleton = true;
     // NOTE: using "display:none" or hidden will block markdown-preview-pusher
     if (!this.settings.showFnRef) section.addClass("visuallyhidden");
+  }
+
+  if (this.settings.smooth && shouldCreateSingleton) {
+    if (singleton) singleton.destroy();
+    bridge.singleton = createSingleton(
+      [...infoList.values()]
+        .filter((info) => Boolean(info.popover))
+        // @ts-ignore
+        .map((info) => info.popover.tippy),
+      {
+        delay: [100, 0],
+        moveTransition: "transform 0.2s ease-out",
+      },
+    );
   }
 };

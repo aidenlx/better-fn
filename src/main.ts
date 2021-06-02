@@ -37,10 +37,14 @@ export default class BetterFn extends Plugin {
       const bridgeEl = view.previewMode.containerEl.querySelector(
         ".markdown-preview-section",
       ) as BridgeEl;
-      const { infoList } = bridgeEl;
+      const { infoList, singleton } = bridgeEl;
       if (infoList) {
         infoList.forEach((info) => info.popover?.tippy.destroy());
         infoList.clear();
+      }
+      if (singleton) {
+        singleton.destroy();
+        bridgeEl.singleton = null;
       }
       return src.call(view, file);
     };
@@ -59,10 +63,14 @@ export default class BetterFn extends Plugin {
       const bridgeEl = leaf.view.previewMode.containerEl.querySelector(
         ".markdown-preview-section",
       ) as BridgeEl;
-      const { infoList } = bridgeEl;
+      const { infoList, singleton } = bridgeEl;
       if (infoList) {
         infoList.forEach((info) => info.popover?.tippy.destroy());
         bridgeEl.infoList = undefined;
+      }
+      if (singleton) {
+        singleton.destroy();
+        bridgeEl.singleton = undefined;
       }
     }
   };

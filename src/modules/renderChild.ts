@@ -25,10 +25,12 @@ tippy.setDefaultProps({
 export type bridgeInfo = {
   sourcePath: string;
   refEl: HTMLElement;
-  popover: {
-    tippy: Instance<Props>;
-    html: string;
-  } | null;
+  popover: popover | null;
+};
+
+type popover = {
+  tippy: Instance<Props>;
+  html: string;
 };
 
 type mutationParam = {
@@ -45,27 +47,27 @@ export function createPopover(
   infoList: infoList,
   contentEl: HTMLElement,
   infoKey: string,
-): void;
+): popover;
 export function createPopover(
   infoList: infoList,
   html: string,
   infoKey: string,
-): void;
+): popover;
 export function createPopover(
   infoList: infoList,
   contentEl: HTMLElement,
   refEl: HTMLElement,
-): void;
+): popover;
 export function createPopover(
   infoList: infoList,
   html: string,
   refEl: HTMLElement,
-): void;
+): popover;
 export function createPopover(
   infoList: infoList,
   elOrHtml: HTMLElement | string,
   keyOrEl: string | HTMLElement,
-): void {
+): popover {
   let html: string;
   const contentEl = typeof elOrHtml !== "string" ? elOrHtml : null;
 
@@ -79,7 +81,7 @@ export function createPopover(
 
   if (typeof keyOrEl === "string" && !infoList.has(keyOrEl)) {
     console.error("no info for key %s in %o", keyOrEl, infoList);
-    return;
+    throw new TypeError("no info for key");
   }
 
   const refEl =
@@ -166,8 +168,10 @@ export function createPopover(
 
   const info = infoList.get(key) as bridgeInfo;
   if (info.popover) info.popover.tippy.destroy();
-  info.popover = {
+  const out = {
     tippy: instance,
     html: html,
   };
+  info.popover = out;
+  return out;
 }
