@@ -36,3 +36,7 @@ sup.footnote-ref {
 span > [data-tippy-root] {
   display: inline;
 }
+
+section.footnotes li[data-footnote-id] {
+  transition: background-color 0.5s ease-in-out;
+}
