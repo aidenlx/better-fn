@@ -16,6 +16,10 @@ tippy.setDefaultProps({
   animation: "shift-toward-subtle",
   duration: [200, 150],
   allowHTML: true,
+  zIndex:
+    +getComputedStyle(document.body)
+      .getPropertyValue("--layer-popover")
+      .trim() ?? 30,
 });
 
 export type bridgeInfo = {
@@ -88,10 +92,15 @@ export function createPopover(
   const warpper = createSpan();
   refEl.parentElement.insertBefore(warpper, refEl);
   warpper.appendChild(refEl);
-
   const instance = tippy(refEl, {
     content: html,
     appendTo: warpper,
+    onTrigger: (inst, evt) => {
+      if (evt.type === "click") {
+        const defaultValue = tippy.defaultProps.zIndex;
+        inst.popper.style.zIndex = (defaultValue - 1).toString();
+      }
+    },
   });
 
   // Monitor internal embed loadings
