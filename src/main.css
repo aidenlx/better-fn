@@ -19,25 +19,18 @@ sup.footnote-ref {
   overflow: hidden;
 }
 
-.tippy-content > span.internal-embed {
+.markdown-preview-view .tippy-content > span.internal-embed {
   min-width: 20em;
 }
 
-.tippy-content {
+.markdown-preview-view .tippy-content {
   max-height: 20em;
   overflow-x: auto;
+  font-size: calc(var(--editor-font-size) * 0.9);
 }
 
-.tippy-content a.footnote-backref {
+.markdown-preview-view .tippy-content a.footnote-backref {
   display: none;
-}
-
-.markdown-preview-view .tippy-box[data-theme~="light-border"] {
-  color: var(--text-normal);
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-primary-alt);
-  box-shadow: 0 2px 8px var(--background-modifier-box-shadow);
-  z-index: var(--layer-popover);
 }
 
 span > [data-tippy-root] {
