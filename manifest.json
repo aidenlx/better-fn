@@ -6,5 +6,5 @@
   "description": "Footnote popover for Obsidian",
   "author": "",
   "authorUrl": "",
-  "isDesktopOnly": false
+  "isDesktopOnly": true
 }
