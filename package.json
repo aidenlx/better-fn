@@ -26,11 +26,11 @@
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsdoc": "^34.0.2",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
+    "json": "^11.0.0",
     "obsidian": "https://github.com/obsidianmd/obsidian-api/tarball/master",
     "prettier": "^2.3.0",
     "release-it": "^14.5.1",
@@ -47,7 +47,10 @@
         "npm run eslint"
       ],
       "after:bump": [
-        "sh scripts/bump-version.sh",
+        "json -I -f manifest.json -e \"this.version='${version}'\"",
+        "json -I -f versions.json -e \"this['${version}']='$(cat manifest.json | json minAppVersion)'\"",
+        "sed -i '' \"s/available for Obsidian v.*$/available for Obsidian v$(cat manifest.json | json minAppVersion)+./\" README.md",
+        "git add .",
         "npm run build"
       ],
       "after:git:release": "echo After git push, before github release",
