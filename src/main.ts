@@ -81,7 +81,6 @@ export default class BetterFn extends Plugin {
   refresh: leafAction = (leaf) => {
     setTimeout(() => {
       if (leaf.view instanceof MarkdownView) {
-        // @ts-ignore
         leaf.view.previewMode.rerender(true);
       }
     }, 200);
