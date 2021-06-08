@@ -1,9 +1,11 @@
-import tippy, { Instance, Props } from "tippy.js";
-import { unwarp } from "./tools";
 import "tippy.js/dist/tippy.css";
 import "./theme.css";
 import "tippy.js/animations/shift-toward-subtle.css";
+
 import { infoList } from "processor";
+import tippy, { Instance, Props } from "tippy.js";
+
+import { unwarp } from "./tools";
 
 tippy.setDefaultProps({
   interactive: true,
@@ -67,6 +69,7 @@ export function createPopover(
   refEl: HTMLElement,
   showButtom?: boolean,
 ): popover;
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function createPopover(
   infoList: infoList,
   elOrHtml: HTMLElement | string,

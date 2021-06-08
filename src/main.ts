@@ -1,7 +1,9 @@
-import { BridgeEl, PopoverHandler } from "./processor";
-import { MarkdownView, Plugin, TextFileView, View, Workspace } from "obsidian";
 import "./main.css";
+
+import { MarkdownView, Plugin, TextFileView, View, Workspace } from "obsidian";
 import { BetterFnSettingTab, DEFAULT_SETTINGS } from "settings";
+
+import { BridgeEl, PopoverHandler } from "./processor";
 
 type leafAction = Parameters<Workspace["iterateAllLeaves"]>[0];
 

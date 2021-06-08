@@ -1,12 +1,12 @@
-export function insertAfter(newNode: Node, referenceNode: Node): boolean {
+export const insertAfter = (newNode: Node, referenceNode: Node): boolean => {
   if (referenceNode.parentNode)
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
   else console.error("fail to insert dom, %o has no parentNode", referenceNode);
 
   return Boolean(referenceNode.parentNode);
-}
+};
 
-export function unwarp(el: HTMLElement) {
+export const unwarp = (el: HTMLElement) => {
   // get the element's parent node
   const parent = el.parentNode;
 
@@ -16,4 +16,4 @@ export function unwarp(el: HTMLElement) {
     // remove the empty element
     parent.removeChild(el);
   }
-}
+};

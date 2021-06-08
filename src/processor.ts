@@ -1,6 +1,6 @@
 import BetterFn from "main";
-import { MarkdownPostProcessor } from "obsidian";
 import { bridgeInfo, createPopover } from "modules/renderChild";
+import { MarkdownPostProcessor } from "obsidian";
 import { createSingleton } from "tippy.js";
 
 export interface BridgeEl extends HTMLElement {
@@ -14,7 +14,7 @@ export type infoList = Map<string, bridgeInfo>;
 /**
  * @param id id from .footnote/.footnote-ref ("fnref-" or "fn-")
  */
-export function findInfoKeys(id: string, from: infoList): string[] | null {
+export const findInfoKeys = (id: string, from: infoList): string[] | null => {
   if (from.has(id)) return [id];
   else {
     const keys = [...from.keys()];
@@ -26,7 +26,7 @@ export function findInfoKeys(id: string, from: infoList): string[] | null {
     if (match.length) return match;
     else return null;
   }
-}
+};
 
 // prettier-ignore
 export const PopoverHandler: MarkdownPostProcessor = function (
@@ -47,7 +47,7 @@ export const PopoverHandler: MarkdownPostProcessor = function (
    * @param callback A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the list.
    * @returns whether selector has any match
    */
-  function forEach(selector: string, callback: callback): boolean {
+  const forEach = (selector: string, callback: callback): boolean => {
     const result = el.querySelectorAll(selector);
     if (result.length !== 0) result.forEach(callback);
     return result.length !== 0;
