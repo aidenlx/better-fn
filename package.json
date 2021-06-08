@@ -1,6 +1,6 @@
 {
   "name": "better-fn",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Footnote popover for Obsidian",
   "main": "main.js",
   "scripts": {

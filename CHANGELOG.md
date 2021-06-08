@@ -1,3 +1,30 @@
+# [1.0.0](https://github.com/alx-plugins/better-fn/compare/0.3.0...1.0.0) (2021-06-08)
+
+
+### Bug Fixes
+
+* fix inline math equation not loaded in popover ([42b26ae](https://github.com/alx-plugins/better-fn/commit/42b26aee2993db318c3688786b6a99aea422cfa9))
+* fix onUnloadFile not destroy tippy instance ([3397238](https://github.com/alx-plugins/better-fn/commit/33972384c0e2c453dbfa61e3b2309364d8315955))
+* hover popover now always show on top of click popover ([51aad10](https://github.com/alx-plugins/better-fn/commit/51aad10119ec28b4f3a5417c39c89d1712df3a8d))
+* popover not working with multiple label to the same reference ([ffe119d](https://github.com/alx-plugins/better-fn/commit/ffe119db8d1e64c8308ca093c5aaa12843e47825)), closes [#6](https://github.com/alx-plugins/better-fn/issues/6)
+* remove mobile flag ([90ad42a](https://github.com/alx-plugins/better-fn/commit/90ad42a066b1162e4ded8974482e5d2f8a5ec637))
+
+
+### Features
+
+* **main.css:** add fade in/out animation for ref highlight ([ac10d3d](https://github.com/alx-plugins/better-fn/commit/ac10d3d3dbb432be70f2d7dc84d894bf596d0cc9))
+* add option to show reference at buttom ([4905e17](https://github.com/alx-plugins/better-fn/commit/4905e1748fa59780a2d67a24f2e979dbac264575)), closes [#3](https://github.com/alx-plugins/better-fn/issues/3)
+* double click on label to jump to reference ([7f0ddde](https://github.com/alx-plugins/better-fn/commit/7f0dddeced1b6d01ff05b2d54a9e2e5df624323b))
+* **main.css:** font-size in popover now respect obsidian's setting ([b98f792](https://github.com/alx-plugins/better-fn/commit/b98f79214d4517fd4e4803ea1560361cb3866c53))
+* improve keyboard accessibility ([90d9897](https://github.com/alx-plugins/better-fn/commit/90d98973360532b3726ba9828b26618908b4a63e))
+* respect obsidian's color scheme ([9d56742](https://github.com/alx-plugins/better-fn/commit/9d56742c49f2a3113c33bbbace8e4a6ec2e2fd39)), closes [#4](https://github.com/alx-plugins/better-fn/issues/4)
+* support smooth transition between popovers ([ce995cf](https://github.com/alx-plugins/better-fn/commit/ce995cf1fb9a12bc29405d7b20b6c37c58807a25))
+
+
+### BREAKING CHANGES
+
+* - PopoverRenderChild is deprecated, replaced by createPopover()
+
 # [0.3.0](https://github.com/alx-plugins/better-fn/compare/0.2.2...0.3.0) (2021-05-26)
 
 
