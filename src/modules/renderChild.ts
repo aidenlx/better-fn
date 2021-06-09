@@ -114,16 +114,9 @@ export function createPopover(
   });
 
   refEl.addEventListener("dblclick", (evt) => {
-    const id = refEl.dataset.footnoteLink;
-    if (showButtom && id) {
-      const li = document.getElementById(id);
-      if (!li) {
-        console.error("element not found: %s", id);
-        return;
-      }
-      li.scrollIntoView();
-      li.addClass("is-flashing");
-      setTimeout(() => li.removeClass("is-flashing"), 1e3);
+    const child = refEl.firstElementChild;
+    if (child instanceof HTMLAnchorElement && showButtom) {
+      child.click();
     }
   });
 

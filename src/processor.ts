@@ -70,13 +70,14 @@ export const PopoverHandler: MarkdownPostProcessor = function (
     // >
     const sup = v as HTMLElement;
 
-    const { id: refId, innerText: srcText } = sup;
+    const { id: refId } = sup;
     const { sourcePath } = ctx;
-    sup.dataset.footnoteLink = (sup.firstElementChild as HTMLAnchorElement).href
-      .split("#")
-      .pop();
-    sup.empty();
-    sup.innerText = srcText;
+    const child = sup.firstElementChild
+    if (child instanceof HTMLAnchorElement) {
+      sup.appendText(child.innerText);
+      child.innerText = "";
+    }
+    else console.error("first child not anchor");
     sup.setAttr("aria-describedby", refId.replace(/^fnref-/, "pp-"));
 
     if (infoList.has(refId)) {
