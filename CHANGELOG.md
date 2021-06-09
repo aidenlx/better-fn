@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/alx-plugins/better-fn/compare/1.0.0...1.0.1) (2021-06-09)
+
+
+### Bug Fixes
+
+* fix dblclick fail to open footnote when footnote not in active dom ([4931509](https://github.com/alx-plugins/better-fn/commit/4931509b57b5e8aa1dab5681ff1dfe2d8c68472b)), closes [#8](https://github.com/alx-plugins/better-fn/issues/8)
+
 # [1.0.0](https://github.com/alx-plugins/better-fn/compare/0.3.0...1.0.0) (2021-06-08)
 
 
