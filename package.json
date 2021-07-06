@@ -31,6 +31,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "json": "^11.0.0",
+    "monkey-around": "^2.2.0",
     "obsidian": "https://github.com/obsidianmd/obsidian-api/tarball/master",
     "prettier": "^2.3.1",
     "release-it": "^14.8.0",
