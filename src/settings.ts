@@ -1,4 +1,4 @@
-import BetterFn from "main";
+import BetterFn from "bf-main";
 import { PluginSettingTab, Setting } from "obsidian";
 
 export interface BetterFnSettings {

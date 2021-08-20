@@ -1,4 +1,4 @@
-import BetterFn from "main";
+import BetterFn from "bf-main";
 import { bridgeInfo, createPopover } from "modules/renderChild";
 import { MarkdownPostProcessor } from "obsidian";
 import { createSingleton } from "tippy.js";
