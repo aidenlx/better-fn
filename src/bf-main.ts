@@ -143,8 +143,6 @@ export default class BetterFn extends Plugin {
             const content = editorView.state.doc.toString();
             const footnoteContent = this.extractFootnoteContent(content, mark);
 
-            console.log(mark, footnoteContent);
-
             const hoverPopover = new HoverPopover(
               <any>editorView,
               <HTMLElement>e.target,
