@@ -23,7 +23,7 @@ sup.footnote-ref {
   min-width: 20em;
 }
 
-.markdown-preview-view .tippy-content {
+.markdown-preview-view .tippy-content, .bn-hover-popover {
   max-height: 20em;
   overflow-x: auto;
   font-size: calc(var(--editor-font-size) * 0.9);
@@ -39,4 +39,20 @@ span > [data-tippy-root] {
 
 section.footnotes li[data-footnote-id] {
   transition: background-color 0.5s ease-in-out;
+}
+
+.popover.hover-popover.bn-hover-popover {
+  padding: 0.5rem;
+  max-height: 20em;
+  overflow-x: auto;
+  font-size: calc(var(--editor-font-size) * 0.9);
+}
+
+.popover.hover-popover.bn-hover-popover p {
+  margin-block-end: 0.2rem;
+  margin-block-start: 0.2rem;
+}
+
+.popover.hover-popover > * {
+  width: calc(var(--popover-width) * 0.8);
 }

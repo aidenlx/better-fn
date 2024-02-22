@@ -1,10 +1,22 @@
 import "./main.css";
 
 import { around } from "monkey-around";
-import { MarkdownView, Plugin, View, Workspace } from "obsidian";
+import {
+  Editor,
+  editorEditorField,
+  editorInfoField,
+  HoverPopover,
+  Keymap,
+  MarkdownRenderer,
+  MarkdownView,
+  Plugin,
+  View,
+  Workspace,
+} from "obsidian";
 import { BetterFnSettingTab, DEFAULT_SETTINGS } from "settings";
 
 import { BridgeEl, PopoverHandler } from "./processor";
+import { EditorView } from "@codemirror/view";
 
 type leafAction = Parameters<Workspace["iterateAllLeaves"]>[0];
 
@@ -89,6 +101,94 @@ export default class BetterFn extends Plugin {
 
   layoutChangeCallback = this.getLoopAllLeavesFunc(this.modifyOnUnloadFile);
 
+  private extractFootnoteContent(content: string, mark: string): string {
+    const targetFootnote = `[${mark}]:`;
+    const start = content.indexOf(targetFootnote);
+
+    if (start === -1) {
+      return "";
+    }
+
+    const footnoteRegex = /^\[[^\]]+\]:/gm;
+    footnoteRegex.lastIndex = start + targetFootnote.length;
+
+    const match = footnoteRegex.exec(content);
+    const end = match ? match.index : content.length;
+
+    let footnoteContent = content.substring(start + targetFootnote.length, end);
+
+    return footnoteContent
+      .split("\n")
+      .map((line) => line.trim())
+      .join("\n");
+  }
+
+  initLivePreviewExtension = () => {
+    this.registerEditorExtension(
+      EditorView.domEventHandlers({
+        mouseover: (e: MouseEvent, editorView: EditorView) => {
+          if (Keymap.isModifier(e, "Mod")) {
+            if (!(e.target as HTMLElement).hasClass("cm-footref")) return;
+
+            const field = editorView.state.field(editorInfoField);
+            const editor: Editor = (field as any).editMode?.editor;
+
+            const pos = editorView.posAtDOM(e.target as Node);
+            const editorPos = editor.offsetToPos(pos);
+            const editorLine = editor.getLine(editorPos.line);
+            const startMarkIndex = editorLine.lastIndexOf("[", editorPos.ch);
+            const endMarkIndex = editorLine.indexOf("]", editorPos.ch);
+            const mark = editorLine.substring(startMarkIndex + 1, endMarkIndex);
+
+            const content = editorView.state.doc.toString();
+            const footnoteContent = this.extractFootnoteContent(content, mark);
+
+            const hoverPopover = new HoverPopover(
+              <any>editorView,
+              <HTMLElement>e.target,
+              100,
+            );
+
+            hoverPopover.hoverEl.toggleClass("bn-hover-popover", true);
+            MarkdownRenderer.render(
+              field.app,
+              footnoteContent,
+              hoverPopover.hoverEl,
+              <string>field?.file?.path,
+              hoverPopover,
+            );
+
+            const embeds =
+              hoverPopover.hoverEl?.querySelectorAll(".internal-link");
+            embeds?.forEach((embed) => {
+              const el = embed as HTMLAnchorElement;
+              const href = el.getAttribute("data-href");
+              if (!href) return;
+
+              const destination = field.app.metadataCache.getFirstLinkpathDest(
+                href,
+                <string>field?.file?.path,
+              );
+              if (!destination) embed.classList.add("is-unresolved");
+
+              this.registerDomEvent(el, "mouseover", (e) => {
+                e.stopPropagation();
+                field.app.workspace.trigger("hover-link", {
+                  event: e,
+                  source: "markdown",
+                  hoverParent: hoverPopover.hoverEl,
+                  targetEl: el,
+                  linktext: href,
+                  sourcePath: el.href,
+                });
+              });
+            });
+          }
+        },
+      }),
+    );
+  };
+
   async onload() {
     console.log("loading BetterFn");
 
@@ -98,6 +198,7 @@ export default class BetterFn extends Plugin {
     this.registerEvent(
       this.app.workspace.on("layout-change", this.layoutChangeCallback),
     );
+    this.initLivePreviewExtension();
     this.getLoopAllLeavesFunc(this.modifyOnUnloadFile, this.refresh)();
 
     this.addSettingTab(new BetterFnSettingTab(this));

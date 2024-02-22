@@ -16,6 +16,9 @@
   "devDependencies": {
     "@release-it/bumper": "^2.0.0",
     "@release-it/conventional-changelog": "^3.0.0",
+    "@codemirror/language": "^6.2.1",
+    "@codemirror/state": "^6.1.2",
+    "@codemirror/view": "^6.3.0",
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
